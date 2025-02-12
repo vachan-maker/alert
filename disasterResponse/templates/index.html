@@ -1,18 +1,5 @@
 {% extends "layout.html" %} 
 {% block body %}
-<form action="/submit-form" method="post">
-    <!-- User Input Fields -->
-    <input type="text" name="name" placeholder="Your Name" required>
-    <input type="email" name="email" placeholder="Your Email" required>
-
-    <!-- Hidden Fields for Geolocation -->
-    <input type="hidden" id="latitude" name="latitude">
-    <input type="hidden" id="longitude" name="longitude">
-
-    <!-- Submit Button -->
-    <button type="submit">Submit</button>
-</form>
-
 <!-- JavaScript to Get Location -->
 <script>
 document.addEventListener("DOMContentLoaded", function() {
