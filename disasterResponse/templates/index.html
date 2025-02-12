@@ -1,5 +1,37 @@
 {% extends "layout.html" %} 
 {% block body %}
+<form action="/submit-form" method="post">
+    <!-- User Input Fields -->
+    <input type="text" name="name" placeholder="Your Name" required>
+    <input type="email" name="email" placeholder="Your Email" required>
+
+    <!-- Hidden Fields for Geolocation -->
+    <input type="hidden" id="latitude" name="latitude">
+    <input type="hidden" id="longitude" name="longitude">
+
+    <!-- Submit Button -->
+    <button type="submit">Submit</button>
+</form>
+
+<!-- JavaScript to Get Location -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                document.getElementById("latitude").value = position.coords.latitude;
+                document.getElementById("longitude").value = position.coords.longitude;
+            },
+            function(error) {
+                console.error("Error getting location:", error);
+            }
+        );
+    } else {
+        console.error("Geolocation is not supported by this browser.");
+    }
+});
+</script>
+
 <div
   class="hero min-h-[70vh]"
   style="background-image: url(https://images.unsplash.com/photo-1617494532490-297fc0eb515e);">
