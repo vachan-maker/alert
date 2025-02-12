@@ -1,8 +1,7 @@
-{% extends "layout.html" %} 
-{% block body %}
+{% block hero %}
 <div
-  class="hero min-h-[70vh]"
-  style="background-image: url(https://images.unsplash.com/photo-1617494532490-297fc0eb515e);">
+  class="hero min-h-screen"
+  style="background-image: url(https://img.daisyui.com/images/stock/photo-1507358522600-9f71e620c44e.webp);">
   <div class="hero-overlay bg-opacity-60"></div>
   <div class="hero-content text-neutral-content text-center">
     <div class="max-w-md">
@@ -15,11 +14,4 @@
     </div>
   </div>
 </div>
-
-<div class="container mx-auto p-7">
-    <h1>Python</h1>
-    <form action="/sos" method="get">
-        <button class="btn btn-error btn-lg w-full">🚨 Send SOS</button>
-        </form>
-        </div>
 {% endblock %}
