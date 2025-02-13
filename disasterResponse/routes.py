@@ -11,19 +11,22 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 AUTH_URL = f"{SUPABASE_URL}/auth/v1"
 
-@app.route("/sign-in")
-def sign_in():
-    return render_template("sign-in.html")
-@app.route("/login", methods=["POST"])
-def login():
-    data = request.json
-    email = data.get("email")
-    password = data.get("password")
 
-    if not email or not password:
-        return jsonify({"error": "Email and password are required"}), 400
-    response = requests.post(AUTH_URL, headers={"apikey": SUPABASE_KEY}, json={"email": email, "password": password})
-    return response.json(),response.status_code
+@app.route("/signin")
+def signin():
+    return render_template("sign-in.html")
+@app.route("/login",methods=["POST"])
+def login():
+    email = request.form.get("email")
+    password = request.form.get("password")
+        
+    try:
+        response = response = supabase.auth.sign_in_with_password({"email": email, "password": password})
+        return "You are logged in"
+        console.log(response)
+    except Exception as e:
+        return "Wrong email or password"
+    
 @app.route("/")
 def home():
     return render_template("index.html")
