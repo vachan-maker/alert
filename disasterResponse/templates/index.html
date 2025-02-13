@@ -35,10 +35,9 @@
 <div class="container mx-auto p-7">
     <h1>Python</h1>
         <button class="btn btn-error btn-lg w-full" onclick="my_modal_1.showModal()">🚨 Send SOS</button>
-        <!-- Open the modal using ID.showModal() method -->
-<dialog id="my_modal_1" class="modal">
+        <dialog id="my_modal_1" class="modal">
   <div class="modal-box">
-    <form action="POST">
+    <form action="/sos" method="post">
       <select class="select select-primary w-full max-w my-4">
         <option>Medical</option>
         <option>Flood</option>
@@ -46,10 +45,11 @@
       </select>
       <input type="button" class="btn btn-warning btn-md w-full" onclick="getUserLocation()" value="Tap to send location!"/>
       <input type = "text" name="name" class="input input-bordered input-primary w-full max-w my-4">
+      <input type="hidden" name="longitude" id="longitude">
+      <input type="hidden" name="latitude" id="latitude">
     <div class="modal-action">
       <form method="dialog">
-        <!-- if there is a button in form, it will close the modal -->
-        <button class="btn btn-error btn-md w-full">🚨 Send SOS</button>
+        <button class="btn btn-error btn-md w-full">🚨 Send SOS!</button>
       </form>
     </div>
   </div>

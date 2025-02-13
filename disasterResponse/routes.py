@@ -31,10 +31,16 @@ def login():
 def home():
     return render_template("index.html")
 
-@app.route("/sos")
+@app.route("/sos",methods=["POST"]) 
 def sos():
+    longitude = request.form.get("longitude")
+    latitude = request.form.get("latitude")
     response = (
     supabase.table("SOS Alerts")
-    .insert({"user_identification": 8921385972, "message": "Pluto"})
+    .insert({"user_identification": 8921385972, "message": "Pluto", "longitude": longitude, "latitude": latitude})
     .execute()
 )
+    
+@app.route("/halan")
+def halan():
+    return render_template("halan.html")
