@@ -1,4 +1,5 @@
 from urllib import response
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jwt
 from flask import render_template, request, jsonify
 from dotenv import load_dotenv
 import os
