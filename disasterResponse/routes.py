@@ -1,6 +1,6 @@
 from urllib import response
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jwt
-from flask import render_template, request, jsonify
+from flask import render_template, request, jsonify, session
 from dotenv import load_dotenv
 import os
 
@@ -22,9 +22,8 @@ def login():
     password = request.form.get("password")
         
     try:
-        response = response = supabase.auth.sign_in_with_password({"email": email, "password": password})
-        print(response)
-        return "You are logged in"
+        print("Hello Vachan!")
+        return jsonify({"access_token": token}), 200
     except Exception as e:
         return "Wrong email or password"
 @app.route("/register", methods=["POST", "GET"])
@@ -36,16 +35,19 @@ def register():
             response = supabase.auth.sign_up(
     {"email": email, "password": password}
 )
-            print(response)
             return "You are registered"
         except Exception as e:
             return "User already exists"
     return render_template("register.html")
     
 @app.route("/")
-@jwt_required()
 def home():
-    return render_template("index.html")
+
+    token = session.get("access_token") 
+    if token:
+        return render_template("index.html")
+    else:
+        return ("Error")
 
 @app.route("/sos",methods=["POST"]) 
 def sos():
