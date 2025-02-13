@@ -2,7 +2,8 @@
 {% block body %}
 <!-- JavaScript to Get Location -->
 <script>
-document.addEventListener("DOMContentLoaded", function() {
+  function getUserLocation()
+  {
     if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(
             function(position) {
@@ -16,7 +17,7 @@ document.addEventListener("DOMContentLoaded", function() {
     } else {
         console.error("Geolocation is not supported by this browser.");
     }
-});
+  }
 </script>
 
 <div
@@ -31,14 +32,30 @@ document.addEventListener("DOMContentLoaded", function() {
         quasi. In deleniti eaque aut repudiandae et a id nisi.
       </p>
       <button class="btn btn-primary" onclick="my_modal_1.showModal()">Get Started</button>
-    </div>
-  </div>
 </div>
 
 <div class="container mx-auto p-7">
     <h1>Python</h1>
-    <form action="/sos" method="POST">
-        <button class="btn btn-error btn-lg w-full">🚨 Send SOS</button>
-        </form>
+        <button class="btn btn-error btn-lg w-full" onclick="my_modal_1.showModal()">🚨 Send SOS</button>
+        <!-- Open the modal using ID.showModal() method -->
+<dialog id="my_modal_1" class="modal">
+  <div class="modal-box">
+    <form action="POST">
+      <select class="select select-primary w-full max-w my-4">
+        <option>Medical</option>
+        <option>Flood</option>
+        <option>Other</option>
+      </select>
+      <input type="button" class="btn btn-warning btn-md w-full" onclick="getUserLocation()" value="Tap to send location!"/>
+      <input type = "text" name="name" class="input input-bordered input-primary w-full max-w my-4">
+    <div class="modal-action">
+      <form method="dialog">
+        <!-- if there is a button in form, it will close the modal -->
+        <button class="btn btn-error btn-md w-full">🚨 Send SOS</button>
+      </form>
+    </div>
+  </div>
+</dialog>
         </div>
+  
 {% endblock %}
