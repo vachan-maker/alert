@@ -22,8 +22,8 @@ def login():
         
     try:
         response = response = supabase.auth.sign_in_with_password({"email": email, "password": password})
+        print(response)
         return "You are logged in"
-        console.log(response)
     except Exception as e:
         return "Wrong email or password"
     
