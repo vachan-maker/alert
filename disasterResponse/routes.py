@@ -22,8 +22,8 @@ def login():
     password = request.form.get("password")
         
     try:
-        print("Hello Vachan!")
-        return jsonify({"access_token": token}), 200
+        response = supabase.auth.sign_in_with_password({"email": email, "password": password})
+        return "You are logged in"
     except Exception as e:
         return "Wrong email or password"
 @app.route("/register", methods=["POST", "GET"])
@@ -42,12 +42,7 @@ def register():
     
 @app.route("/")
 def home():
-
-    token = session.get("access_token") 
-    if token:
-        return render_template("index.html")
-    else:
-        return ("Error")
+    return render_template("index.html")
 
 @app.route("/sos",methods=["POST"]) 
 def sos():
