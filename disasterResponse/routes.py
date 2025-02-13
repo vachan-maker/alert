@@ -39,6 +39,7 @@ def sos():
     supabase.table("SOS Alerts")
     .insert({"user_identification": 8921385972, "message": "Pluto", "longitude": longitude, "latitude": latitude})
     .execute()
+
 )
     
 @app.route("/halan")
