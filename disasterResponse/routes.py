@@ -43,6 +43,7 @@ def register():
     return render_template("register.html")
     
 @app.route("/")
+@jwt_required()
 def home():
     return render_template("index.html")
 
