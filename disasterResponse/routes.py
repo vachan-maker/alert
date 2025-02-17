@@ -13,20 +13,20 @@ SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 AUTH_URL = f"{SUPABASE_URL}/auth/v1"
 
 
-@app.route("/signin")
-def signin():
-    return render_template("sign-in.html")
-@app.route("/login",methods=["POST"])
+@app.route("/login", methods=["POST", "GET"])
 def login():
-    email = request.form.get("email")
-    password = request.form.get("password")
-    if email and password:
-        response = supabase.auth.sign_in_with_password({"email": email, "password": password})
-        if response and response.session.access_token:
-            session["user"] = response.session.access_token
-            return redirect(url_for("dashboard"))
-        else:
-            return jsonify({"error": "Invalid credentials"}), 401
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
+        if email and password:
+            response = supabase.auth.sign_in_with_password({"email": email, "password": password})
+            if response and response.session.access_token:
+                session["user"] = response.session.access_token
+                return redirect(url_for("dashboard"))
+            else:
+                return jsonify({"error": "Invalid credentials"}), 401
+    return render_template("sign-in.html")
+
 @app.route("/register", methods=["POST", "GET"])
 def register():
     if request.method == "POST":
@@ -45,7 +45,7 @@ def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if "user" not in session:
-            return "Not logged in"  # Redirect to login page if not authenticated
+            return redirect(url_for("login"))  # Redirect to login page if not authenticated
         return f(*args, **kwargs)
     return decorated_function
 
