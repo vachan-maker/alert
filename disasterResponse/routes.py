@@ -1,7 +1,7 @@
 from urllib import response
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jwt
-from flask import render_template, request, jsonify, session
+from flask import render_template, request, jsonify, session, redirect,url_for
 from dotenv import load_dotenv
+from functools import wraps
 import os
 
 import requests
@@ -20,12 +20,13 @@ def signin():
 def login():
     email = request.form.get("email")
     password = request.form.get("password")
-        
-    try:
+    if email and password:
         response = supabase.auth.sign_in_with_password({"email": email, "password": password})
-        return "You are logged in"
-    except Exception as e:
-        return "Wrong email or password"
+        if response and response.session.access_token:
+            session["user"] = response.session.access_token
+            return redirect(url_for("dashboard"))
+        else:
+            return jsonify({"error": "Invalid credentials"}), 401
 @app.route("/register", methods=["POST", "GET"])
 def register():
     if request.method == "POST":
@@ -40,8 +41,17 @@ def register():
             return "User already exists"
     return render_template("register.html")
     
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if "user" not in session:
+            return "Not logged in"  # Redirect to login page if not authenticated
+        return f(*args, **kwargs)
+    return decorated_function
+
 @app.route("/")
-def home():
+@login_required
+def dashboard():
     return render_template("index.html")
 
 @app.route("/sos",methods=["POST"]) 
@@ -54,7 +64,4 @@ def sos():
     .execute()
 
 )
-    
-@app.route("/halan")
-def halan():
-    return render_template("halan.html")
+    return "SOS Alert Sent"

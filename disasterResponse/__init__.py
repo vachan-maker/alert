@@ -13,7 +13,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URI')
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 app.config['JWT_SECRET_KEY'] = os.getenv('SUPABASE_JWT_SECRET')
 app.config['JWT_ALGORITHM'] = os.getenv('')
-
+app.secret_key = os.urandom(24) # secret key for session storage or something
 
 jwt = JWTManager(app)
 #creating instance of the database
