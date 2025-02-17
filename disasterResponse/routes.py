@@ -32,15 +32,15 @@ def register():
     if request.method == "POST":
         email = request.form.get("email")
         password = request.form.get("password")
-        try:
-            response = supabase.auth.sign_up(
-    {"email": email, "password": password}
-)
-            return "You are registered"
-        except Exception as e:
-            return "User already exists"
+        response = supabase.auth.sign_up(
+    {"email": email, "password": password})
+        if response and response.session.access_token:
+            session["user"] = response.session.access_token
+            return redirect(url_for("dashboard"))
+        else:
+            return jsonify({"error": "Invalid credentials"}), 401
     return render_template("register.html")
-    
+
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -65,3 +65,13 @@ def sos():
 
 )
     return "SOS Alert Sent"
+
+@app.route("/phone",methods=["POST","GET"])
+def phone():
+    if request.method == "POST":
+        phone = request.form.get("phone")
+        response = supabase.auth.sign_in_with_otp({
+        'phone': phone,
+    })
+        session["phone number"] = phone
+    return render_template("phone.html")
