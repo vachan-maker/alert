@@ -34,7 +34,8 @@ def register():
         password = request.form.get("password")
         response = supabase.auth.sign_up(
     {"email": email, "password": password})
-        if response and response.session.access_token:
+        print(response)
+        if response:
             session["user"] = response.session.access_token
             return redirect(url_for("dashboard"))
         else:
