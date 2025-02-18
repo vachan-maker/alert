@@ -2,6 +2,7 @@
 
 
 {% block body %}
+<div class="px-7">
 <div id="map" style="height: 180px;"></div>
 <div class="stats shadow bg-error">
     <div class="stat">
@@ -55,8 +56,23 @@ if (error) {
   });
 }
 }
-setInterval(start, 5000);
+
+async function run() {
+
+  const changes = supabase
+  .channel('schema-db-changes')
+  .on(
+    'postgres_changes',
+    {
+      event: 'INSERT', // Listen only to INSERTs
+      schema: 'public',
+    },
+    (payload) => console.log(payload)
+  )
+  .subscribe()
+}
+run()
 
   </script>
-
+</div>
 {% endblock %}

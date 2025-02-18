@@ -81,3 +81,9 @@ def phone():
 @app.route("/admin")
 def admin():
     return render_template("admin.html")
+
+@app.route("/webhook",methods=["POST"])
+def webhook():
+    data = request.json
+    print(data)
+    return data
