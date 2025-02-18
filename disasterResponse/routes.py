@@ -65,6 +65,7 @@ def sos():
     .execute()
 
 )
+    print(response)
     return "SOS Alert Sent"
 
 @app.route("/phone",methods=["POST","GET"])
