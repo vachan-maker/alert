@@ -82,7 +82,7 @@ def phone():
 def admin():
     return render_template("admin.html")
 
-@app.route("/webhook",methods=["POST"])
+@app.route("/webhook",methods=["POST", "GET"])
 def webhook():
     data = request.json
     print(data)
