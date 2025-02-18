@@ -76,3 +76,7 @@ def phone():
     })
         session["phone number"] = phone
     return render_template("phone.html")
+
+@app.route("/admin")
+def admin():
+    return render_template("admin.html")

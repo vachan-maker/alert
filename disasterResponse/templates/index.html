@@ -1,61 +1,62 @@
-{% extends "layout.html" %} 
+{% extends "layout.html" %}
 {% block body %}
 <!-- JavaScript to Get Location -->
 <script>
-  function getUserLocation()
-  {
+  function getUserLocation() {
     if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(
-            function(position) {
-                document.getElementById("latitude").value = position.coords.latitude;
-                document.getElementById("longitude").value = position.coords.longitude;
-            },
-            function(error) {
-                console.error("Error getting location:", error);
-            }
-        );
+      navigator.geolocation.getCurrentPosition(
+        function (position) {
+          document.getElementById("latitude").value = position.coords.latitude;
+          document.getElementById("longitude").value = position.coords.longitude;
+        },
+        function (error) {
+          console.error("Error getting location:", error);
+        }
+      );
     } else {
-        console.error("Geolocation is not supported by this browser.");
+      console.error("Geolocation is not supported by this browser.");
     }
   }
 </script>
-<div
-  class="hero min-h-[70vh]"
-  style="background-image: url(https://images.unsplash.com/photo-1617494532490-297fc0eb515e);">
-  <div class="hero-overlay bg-opacity-60"></div>
-  <div class="hero-content text-neutral-content text-center">
-    <div class="max-w-md">
-      <h1 class="mb-5 text-5xl font-bold">ALERT</h1>
-      <p class="mb-5">Accurate Localized Emergency Reporting Tool
-      </p>
+<div class="px-7">
+  <div class="bg-cyan-600 min-h-96 rounded-xl flex items-center justify-center">
+    <h1 class="font-extrabold text-center text-7xl">ALERT</h1>
+
+  </div>
 </div>
-<div>
-<div class="container mx-auto p-7">
-        <button class="btn btn-error btn-lg w-full" onclick="my_modal_1.showModal()">🚨 Send SOS</button>
+<div class="px-7 mt-5">
+<div class="card bg-error text-primary-content w-96">
+  <div class="card-body">
+    <h2 class="card-title text-error-content">Send Distress Signal!</h2>
+    <p>A card component has a figure, a body part, and inside body there are title and actions parts</p>
+    <div class="card-actions justify-end">
+        <button class="btn btn-lg w-full" onclick="my_modal_1.showModal()">🚨 Send SOS</button>
         <dialog id="my_modal_1" class="modal">
-  <div class="modal-box">
-    <form action="/sos" method="post">
-      <select class="select select-primary w-full max-w my-4">
-        <option>Medical</option>
-        <option>Flood</option>
-        <option>Other</option>
-      </select>
-      <input type="button" class="btn btn-warning btn-md w-full" onclick="getUserLocation()" value="Tap to send location!"/>
-      <input type = "text" name="name" class="input input-bordered input-primary w-full max-w my-4">
-      <input type="hidden" name="longitude" id="longitude">
-      <input type="hidden" name="latitude" id="latitude">
-      <div id="map"></div>
-      <script>
-      var map = L.map('map').setView([51.505, -0.09], 13);
-      </script>
-    <div class="modal-action">
-      <form method="dialog">
-        <button class="btn btn-error btn-md w-full">🚨 Send SOS!</button>
-      </form>
+          <div class="modal-box">
+            <form action="/sos" method="post">
+              <select class="select select-primary w-full max-w my-4">
+                <option>Medical</option>
+                <option>Flood</option>
+                <option>Other</option>
+              </select>
+              <input type="button" class="btn btn-warning btn-md w-full" onclick="getUserLocation()"
+                value="Tap to send location!" />
+              <input type="text" name="name" class="input input-bordered input-primary w-full max-w my-4">
+              <input type="hidden" name="longitude" id="longitude">
+              <input type="hidden" name="latitude" id="latitude">
+              <div id="map"></div>
+              <script>
+                var map = L.map('map').setView([51.505, -0.09], 13);
+              </script>
+              <div class="modal-action">
+                <form method="dialog">
+                  <button class="btn btn-md w-full">🚨 Send SOS!</button>
+                </form>
+              </div>
+          </div>
+        </dialog>
     </div>
   </div>
-</dialog>
-        </div>
-        </div>
-  
+</div>
+</div>
 {% endblock %}
