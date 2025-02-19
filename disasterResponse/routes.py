@@ -1,5 +1,5 @@
 from urllib import response
-from flask import render_template, request, jsonify, session, redirect,url_for
+from flask import render_template, request, jsonify, session, redirect,url_for,flash
 from dotenv import load_dotenv
 from functools import wraps
 import os
@@ -66,7 +66,8 @@ def sos():
 
 )
     print(response)
-    return "SOS Alert Sent"
+    flash("SOS Alert sent! Help is on the way!", "success")
+    return redirect(url_for("dashboard"))
 
 @app.route("/phone",methods=["POST","GET"])
 def phone():

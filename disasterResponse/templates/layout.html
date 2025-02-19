@@ -20,5 +20,16 @@
     {% block body %}
     
     {% endblock %}
+    {% with messages = get_flashed_messages() %}
+  {% if messages %}
+    {% for message in messages %}
+    <div class="toast toast-start">
+    <div class="alert alert-success">
+      <span>{{message}}</span>
+    </div>
+    </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
 </body>
 </html>
