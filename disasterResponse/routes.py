@@ -57,17 +57,19 @@ def dashboard():
 
 @app.route("/sos",methods=["POST"]) 
 def sos():
-    longitude = request.form.get("longitude")
-    latitude = request.form.get("latitude")
-    response = (
-    supabase.table("SOSAlerts")
-    .insert({"user_identification": 8921385972, "message": "Pluto", "longitude": longitude, "latitude": latitude, "UserName": "Vachan"})
-    .execute()
+    try:
+        longitude = request.form.get("longitude")
+        latitude = request.form.get("latitude")
+        response = (
+        supabase.table("SOSAlerts")
+        .insert({"user_identification": 8921385972, "message": "Pluto", "longitude": longitude, "latitude": latitude, "UserName": "Vachan"})
+        .execute())
+        flash("SOS Alert sent! Help is on the way!", "success")
+        return redirect(url_for("dashboard"))
+    except Exception:
+        flash("Error sending SOS Alert. Have you enabled location?", "danger")
+        return (redirect(url_for("dashboard")))
 
-)
-    print(response)
-    flash("SOS Alert sent! Help is on the way!", "success")
-    return redirect(url_for("dashboard"))
 
 @app.route("/phone",methods=["POST","GET"])
 def phone():

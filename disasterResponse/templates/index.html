@@ -10,7 +10,7 @@
           document.getElementById("longitude").value = position.coords.longitude;
         },
         function (error) {
-          console.error("Error getting location:", error);
+          alert("Error getting location:", error);
         }
       );
     } else {
@@ -28,7 +28,7 @@
 <div class="card bg-gradient-to-r from-red-400 to-red-500 text-primary-content w-96">
   <div class="card-body">
     <h2 class="card-title text-error-content">Send Distress Signal!</h2>
-    <p>A card component has a figure, a body part, and inside body there are title and actions parts</p>
+    <p>Alert authorities!</p>
     <div class="card-actions justify-end">
         <button class="btn btn-lg w-full" onclick="my_modal_1.showModal()">🚨 Send SOS</button>
         <dialog id="my_modal_1" class="modal">
