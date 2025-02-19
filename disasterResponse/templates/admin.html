@@ -59,15 +59,13 @@ if (error) {
 
 async function run() {
 
-  const changes = supabase
-  .channel('schema-db-changes')
+  const changes = supabase.channel('custom-insert-channel')
   .on(
     'postgres_changes',
-    {
-      event: 'INSERT', // Listen only to INSERTs
-      schema: 'public',
-    },
-    (payload) => console.log(payload)
+    { event: 'INSERT', schema: 'public', table: 'SOSAlerts' },
+    (payload) => {
+      console.log('Change received!', payload)
+    }
   )
   .subscribe()
 }
