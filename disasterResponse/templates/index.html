@@ -10,8 +10,22 @@
           document.getElementById("longitude").value = position.coords.longitude;
         },
         function (error) {
-          alert("Error getting location:", error);
+          switch (error.code) {
+                case error.PERMISSION_DENIED:
+                    alert("Location access denied. Please allow location services and refresh the page.");
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    alert("Location information is unavailable. Try again later.");
+                    break;
+                case error.TIMEOUT:
+                    alert("Request to get location timed out. Please retry.");
+                    break;
+                case error.UNKNOWN_ERROR:
+                default:
+                    alert("An unknown error occurred while retrieving location.");
+                    break;
         }
+      }
       );
     } else {
       console.error("Geolocation is not supported by this browser.");
