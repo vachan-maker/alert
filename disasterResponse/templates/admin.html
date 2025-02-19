@@ -26,44 +26,45 @@
       document.getElementById('toastContainer').appendChild(toast);
       setTimeout(() => toast.remove(), 6000);
     }
-    var map = L.map('map').setView([15.20, 78.6413], 13);
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    }).addTo(map);
-    async function start() {
-      let { data, count, error } = await supabase
-        .from('SOS Alerts')
-        .select('*', { count: 'exact' });
+    let count; // Declare count globally
 
-      if (error) {
-        console.error("Error fetching row count:", error);
-      } else {
-        document.getElementById('sos-count').textContent = count;
-        data.forEach(row => {
-          console.log(row.latitude)
-          var marker = L.marker([parseFloat(row.latitude), parseFloat(row.longitude)]).addTo(map);
+async function start() {
+  // Fetch initial data and row count
+  let { data, count: rowCount, error } = await supabase
+    .from('SOSAlerts')
+    .select('*', { count: 'exact' });
 
-        });
+  if (error) {
+    console.error("Error fetching row count:", error);
+  } else {
+    count = rowCount;  // Set global count value
+    document.getElementById('sos-count').textContent = count;;
+  }
+
+  // Set up real-time subscription for inserts to SOSAlerts
+  const changes = await supabase.channel('custom-insert-channel')
+    .on(
+      'postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'SOSAlerts' },
+      (payload) => {
+        if (payload.eventType === 'INSERT') {
+          console.log(payload);
+          showAlert(`${payload.new.UserName} has sent an SOS`);
+
+          // Increment count on new insert
+          count++;  // Increment global count
+          document.getElementById('sos-count').textContent = count;  // Update UI with new count
+        }
       }
-    }
+    )
+    .subscribe();
+}
 
-    async function run() {
+// Call start() to fetch the initial data and set up the subscription
+start();
 
-      const changes = supabase.channel('custom-insert-channel')
-        .on(
-          'postgres_changes',
-          { event: 'INSERT', schema: 'public', table: 'SOSAlerts' },
-          (payload) => {
-            if (payload.eventType === 'INSERT') {
-              console.log(payload)
-              showAlert(`${payload.new.UserName} has sent an SOS`);
-            }
-          }
-        )
-        .subscribe()
-    }
-    run()
+
+    start()
 
   </script>
 </div>
