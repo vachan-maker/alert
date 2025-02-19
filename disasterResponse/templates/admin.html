@@ -19,7 +19,8 @@
       <div class="stat-value" id="sos-count"></div>
     </div>
   </div>
-  <div id = "cardContainer" class="flex flex-col"></div>
+  <h3 class="text-2xl my-5">Distress Signals</h3>
+  <div id = "cardContainer" class="flex flex-col h-96 overflow-auto border-accent rounded-2xl w-fit my-4"></div>
   <div id="map" style="height: 180px;"></div>
   <div id="toastContainer" class="toast toast-end fixed top-5 right-5 flex flex-col mt-6"></div>
   <script type="module">
@@ -37,18 +38,20 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
       document.getElementById('toastContainer').appendChild(toast);
       setTimeout(() => toast.remove(), 6000);
     }
-    function createCard(message2) {
+    function createCard(message2, isNewElement = false) {
       const card = document.createElement("div");
-      card.classList.add("card","w-96","bg-base-200","card-sm","shadow-lg","rounded-box","m-4");
+      card.classList.add("card","w-96","bg-base-200","card-sm","shadow-lg","rounded-box","my-4");
       card.innerHTML = `
        <div class="card-body">
     <h2 class="card-title">${message2.UserName}</h2>
-    <p>${message2.distress_type}</p>
-    <div class="justify-end card-actions">
-      <button class="btn btn-primary">Buy Now</button>
-    </div>
+    <p class="text-base">Distrss Type: <span class = "font-bold">${message2.distress_type}</span></p>
   </div>`;
-      document.getElementById('cardContainer').appendChild(card);
+  if (isNewElement){
+        card.classList.add("animate-bounce","border-indigo-500/100");
+        setTimeout(() => card.classList.remove("animate-bounce","border-indigo-500/100"), 5000);
+      }
+      document.getElementById('cardContainer').prepend(card);
+      
     }
     let count; // Declare count globally
 //     var map = L.map('map').setView([9.41373, 76.641], 2);
@@ -79,7 +82,7 @@ async function start() {
     count = rowCount;  // Set global count value
     document.getElementById('sos-count').textContent = count;
     data.forEach((element) => {
-      createCard(element);
+      createCard(element,false);
     });
     // data.forEach((row) => {
     //   var marker = L.marker([row.latitude, row.longitude]).addTo(map);
@@ -96,7 +99,7 @@ async function start() {
         if (payload.eventType === 'INSERT') {
           console.log(payload);
           showAlert(`${payload.new.UserName} has sent an SOS`);
-          createCard(payload);
+          createCard(payload.new,true);
 
           // Increment count on new insert
           count++;  // Increment global count
