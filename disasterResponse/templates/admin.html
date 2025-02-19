@@ -3,73 +3,67 @@
 
 {% block body %}
 <div class="px-7">
-<div id="map" style="height: 180px;"></div>
-<div class="stats shadow bg-error">
+  <div id="map" style="height: 180px;"></div>
+  <div class="stats shadow bg-error">
     <div class="stat">
       <div class="stat-title">No. of SOS Alerts!</div>
       <div class="stat-value" id="sos-count"></div>
     </div>
   </div>
+  <div id="toastContainer" class="toast toast-end fixed top-5 right-5 flex flex-col mt-6"></div>
   <script type="module">
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-// Create a single supabase client for interacting with your database
-const supabase = createClient('https://ljncaafiuqjlrnruxirq.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxqbmNhYWZpdXFqbHJucnV4aXJxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzkzNjE1ODMsImV4cCI6MjA1NDkzNzU4M30.p66vJW72EXOPI7khL1Nb8_qwv-W-DnU_Pk0UH_uBMGc')
-function showAlert(message) {
-            // Create the alert div dynamically
-            const alertDiv = document.createElement("div");
-            alertDiv.setAttribute("role", "alert");
-            alertDiv.classList.add("alert", "alert-warning", "flex", "items-center", "space-x-4", "p-4", "mb-4", "border", "border-yellow-500", "bg-yellow-100", "text-yellow-700");
-
-            // Add SVG icon
-            alertDiv.innerHTML = `
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                <span>${message}</span>
-            `;
-
-            // Append the alert div to the body
-            document.body.appendChild(alertDiv);
-
-            // Remove the alert after 5 seconds
-            setTimeout(() => alertDiv.remove(), 5000);
-        }
-        var map = L.map('map').setView([15.20, 78.6413], 13);
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-}).addTo(map);
-async function start()
-{
-let { data,count, error } = await supabase
-  .from('SOS Alerts')
-  .select('*', { count: 'exact' });
-
-if (error) {
-  console.error("Error fetching row count:", error);
-} else {
-  document.getElementById('sos-count').textContent = count;
-  data.forEach(row => {
-    console.log(row.latitude)
-    var marker = L.marker([parseFloat(row.latitude), parseFloat(row.longitude)]).addTo(map);
-    
-  });
-}
-}
-
-async function run() {
-
-  const changes = supabase.channel('custom-insert-channel')
-  .on(
-    'postgres_changes',
-    { event: 'INSERT', schema: 'public', table: 'SOSAlerts' },
-    (payload) => {
-      console.log('Change received!', payload)
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+    // Create a single supabase client for interacting with your database
+    const supabase = createClient('https://ljncaafiuqjlrnruxirq.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxqbmNhYWZpdXFqbHJucnV4aXJxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzkzNjE1ODMsImV4cCI6MjA1NDkzNzU4M30.p66vJW72EXOPI7khL1Nb8_qwv-W-DnU_Pk0UH_uBMGc')
+    function showAlert(message) {
+      const toast = document.createElement("div");
+      toast.classList.add("toast", "toast-end");
+      toast.innerHTML = `
+      <div class="alert alert-warning">
+        <span>${message}</span>
+      </div>
+      `;
+      document.getElementById('toastContainer').appendChild(toast);
+      setTimeout(() => toast.remove(), 6000);
     }
-  )
-  .subscribe()
-}
-run()
+    var map = L.map('map').setView([15.20, 78.6413], 13);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+    async function start() {
+      let { data, count, error } = await supabase
+        .from('SOS Alerts')
+        .select('*', { count: 'exact' });
+
+      if (error) {
+        console.error("Error fetching row count:", error);
+      } else {
+        document.getElementById('sos-count').textContent = count;
+        data.forEach(row => {
+          console.log(row.latitude)
+          var marker = L.marker([parseFloat(row.latitude), parseFloat(row.longitude)]).addTo(map);
+
+        });
+      }
+    }
+
+    async function run() {
+
+      const changes = supabase.channel('custom-insert-channel')
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'SOSAlerts' },
+          (payload) => {
+            if (payload.eventType === 'INSERT') {
+              console.log(payload)
+              showAlert(`${payload.new.UserName} has sent an SOS`);
+            }
+          }
+        )
+        .subscribe()
+    }
+    run()
 
   </script>
 </div>

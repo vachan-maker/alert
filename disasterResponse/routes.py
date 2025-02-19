@@ -61,7 +61,7 @@ def sos():
     latitude = request.form.get("latitude")
     response = (
     supabase.table("SOSAlerts")
-    .insert({"user_identification": 8921385972, "message": "Pluto", "longitude": longitude, "latitude": latitude})
+    .insert({"user_identification": 8921385972, "message": "Pluto", "longitude": longitude, "latitude": latitude, "UserName": "Vachan"})
     .execute()
 
 )
