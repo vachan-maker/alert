@@ -84,6 +84,7 @@ def admin():
 
 @app.route("/webhook",methods=["POST", "GET"])
 def webhook():
-    data = request.json
-    print(data)
-    return jsonify(data)
+    if request.method == "GET":
+        data = request.json
+        print(data)
+        return jsonify(data)
