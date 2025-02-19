@@ -42,16 +42,8 @@ def register():
             return jsonify({"error": "Invalid credentials"}), 401
     return render_template("register.html")
 
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if "user" not in session:
-            return redirect(url_for("login"))  # Redirect to login page if not authenticated
-        return f(*args, **kwargs)
-    return decorated_function
 
 @app.route("/")
-@login_required
 def dashboard():
     return render_template("index.html")
 
@@ -60,9 +52,10 @@ def sos():
     try:
         longitude = request.form.get("longitude")
         latitude = request.form.get("latitude")
+        message = request.form.get("name")
         response = (
         supabase.table("SOSAlerts")
-        .insert({"user_identification": 8921385972, "message": "Pluto", "longitude": longitude, "latitude": latitude, "UserName": "Vachan"})
+        .insert({"user_identification": 8921385972, "message": "Pluto", "longitude": longitude, "latitude": latitude, "UserName": message})
         .execute())
         flash("SOS Alert sent! Help is on the way!", "success")
         return redirect(url_for("dashboard"))
@@ -81,13 +74,3 @@ def phone():
         session["phone number"] = phone
     return render_template("phone.html")
 
-@app.route("/admin")
-def admin():
-    return render_template("admin.html")
-
-@app.route("/webhook",methods=["POST", "GET"])
-def webhook():
-    if request.method == "GET":
-        data = request.json
-        print(data)
-        return jsonify(data)
