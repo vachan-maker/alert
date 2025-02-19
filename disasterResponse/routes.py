@@ -86,4 +86,4 @@ def admin():
 def webhook():
     data = request.json
     print(data)
-    return data
+    return jsonify(data)
