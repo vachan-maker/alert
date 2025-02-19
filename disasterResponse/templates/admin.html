@@ -19,10 +19,11 @@
       <div class="stat-value" id="sos-count"></div>
     </div>
   </div>
+  <div id = "cardContainer" class="flex flex-col"></div>
   <div id="map" style="height: 180px;"></div>
   <div id="toastContainer" class="toast toast-end fixed top-5 right-5 flex flex-col mt-6"></div>
   <script type="module">
-    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
     // Create a single supabase client for interacting with your database
     const supabase = createClient('https://ljncaafiuqjlrnruxirq.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxqbmNhYWZpdXFqbHJucnV4aXJxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzkzNjE1ODMsImV4cCI6MjA1NDkzNzU4M30.p66vJW72EXOPI7khL1Nb8_qwv-W-DnU_Pk0UH_uBMGc')
     function showAlert(message) {
@@ -35,6 +36,19 @@
       `;
       document.getElementById('toastContainer').appendChild(toast);
       setTimeout(() => toast.remove(), 6000);
+    }
+    function createCard(message2) {
+      const card = document.createElement("div");
+      card.classList.add("card","w-96","bg-base-200","card-sm","shadow-lg","rounded-box","m-4");
+      card.innerHTML = `
+       <div class="card-body">
+    <h2 class="card-title">${message2.UserName}</h2>
+    <p>${message2.distress_type}</p>
+    <div class="justify-end card-actions">
+      <button class="btn btn-primary">Buy Now</button>
+    </div>
+  </div>`;
+      document.getElementById('cardContainer').appendChild(card);
     }
     let count; // Declare count globally
 //     var map = L.map('map').setView([9.41373, 76.641], 2);
@@ -64,6 +78,9 @@ async function start() {
     console.log(data)
     count = rowCount;  // Set global count value
     document.getElementById('sos-count').textContent = count;
+    data.forEach((element) => {
+      createCard(element);
+    });
     // data.forEach((row) => {
     //   var marker = L.marker([row.latitude, row.longitude]).addTo(map);
     //   console.log(row.longitude, row.latitude);
@@ -79,6 +96,7 @@ async function start() {
         if (payload.eventType === 'INSERT') {
           console.log(payload);
           showAlert(`${payload.new.UserName} has sent an SOS`);
+          createCard(payload);
 
           // Increment count on new insert
           count++;  // Increment global count
