@@ -48,9 +48,11 @@
         <dialog id="my_modal_1" class="modal">
           <div class="modal-box">
             <form action="/sos" method="post">
-              <select class="select select-primary w-full max-w my-4">
-                <option>Medical</option>
+              <select class="select select-primary w-full max-w my-4" name="type" required>
                 <option>Flood</option>
+                <option>Fire</option>
+                <option>Earthquake</option>
+                <option>Medical Emergency</option>
                 <option>Other</option>
               </select>
               <input type="button" class="btn btn-warning btn-md w-full" onclick="getUserLocation()"
@@ -58,10 +60,6 @@
               <input type="text" id="name" name="name" class="input input-bordered input-primary w-full max-w my-4" placeholder="Your Name" required>
               <input type="hidden" name="longitude" id="longitude">
               <input type="hidden" name="latitude" id="latitude">
-              <div id="map"></div>
-              <script>
-                var map = L.map('map').setView([51.505, -0.09], 13);
-              </script>
               <div class="modal-action">
                 <form method="dialog">
                   <button class="btn btn-md w-full">🚨 Send SOS!</button>
