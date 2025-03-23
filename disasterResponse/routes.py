@@ -91,3 +91,12 @@ def webhook():
         data = request.json
         print(data)
         return jsonify(data)
+    
+@app.route("/get_sos_locations", methods=["GET"])
+def get_sos_locations():
+    try:
+        response = supabase.table("SOSAlerts").select("*").execute()
+        data = response.data
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
