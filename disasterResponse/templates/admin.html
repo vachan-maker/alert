@@ -2,23 +2,27 @@
 
 
 {% block body %}
+<style>
+</style>
 <div class="px-7">
   <div class="min-h-96 rounded-xl flex items-center justify-center bg-linear-to-r from-cyan-500 to-blue-500">
     <div>
-    <h1 class="font-extrabold text-center text-7xl">ALERT</h1>
-    <h2 class="text-center text-xl">Admin Panel</h2>
+      <h1 class="font-extrabold text-center text-7xl">ALERT</h1>
+      <h2 class="text-center text-xl">Admin Panel</h2>
     </div>
 
   </div>
 </div>
 <div class="px-7 mt-7">
+  <div class="flex flex-row justify-between">
+    <div class="flex flex-col">
   <div class="flex flex-row items-baseline gap-3">
-  <h3 class="text-2xl mb-5">Realtime Stats</h3>
-  <div class="inline-grid *:[grid-area:1/1]">
-    <div class="status  status-success animate-ping"></div>
-    <div class="status  status-success"></div>
-  </div> Connected to the server
-</div>
+    <h3 class="text-2xl mb-5">Realtime Stats</h3>
+    <div class="inline-grid *:[grid-area:1/1]">
+      <div class="status  status-success animate-ping"></div>
+      <div class="status  status-success"></div>
+    </div> Connected to the server
+  </div>
   <div class="stats shadow bg-error">
     <div class="stat">
       <div class="stat-title">No. of SOS Alerts!</div>
@@ -26,11 +30,13 @@
     </div>
   </div>
   <h3 class="text-2xl my-5">Distress Signals</h3>
-  <div id = "cardContainer" class="flex flex-col h-96 overflow-auto border-accent rounded-2xl w-fit my-4"></div>
-  <div id="map" style="height: 180px;"></div>
+  <div id="cardContainer" class="flex flex-col h-96 overflow-auto border-accent rounded-2xl w-fit my-4"></div>
+  </div>
+  <div id="map" class="w-4xl  rounded-2xl"></div>
+</div>
   <div id="toastContainer" class="toast toast-end"></div>
   <script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
     // Create a single supabase client for interacting with your database
     const supabase = createClient('https://ljncaafiuqjlrnruxirq.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxqbmNhYWZpdXFqbHJucnV4aXJxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzkzNjE1ODMsImV4cCI6MjA1NDkzNzU4M30.p66vJW72EXOPI7khL1Nb8_qwv-W-DnU_Pk0UH_uBMGc')
     function showAlert(message) {
@@ -46,80 +52,187 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
     }
     function createCard(message2, isNewElement = false) {
       const card = document.createElement("div");
-      card.classList.add("card","w-96","bg-base-200","card-sm","shadow-lg","rounded-box","my-4");
+      card.classList.add("card", "w-96", "bg-base-200", "card-sm", "shadow-lg", "rounded-box", "my-4");
       card.innerHTML = `
        <div class="card-body">
     <h2 class="card-title">${message2.UserName}</h2>
-    <p class="text-base">Distrss Type: <span class = "font-bold">${message2.distress_type}</span></p>
+    <p class="text-base">Distress Type: <span class = "font-bold">${message2.distress_type}</span></p>
   </div>`;
-  if (isNewElement){
-        card.classList.add("animate-bounce","border-indigo-500/100");
-        setTimeout(() => card.classList.remove("animate-bounce","border-indigo-500/100"), 5000);
+      if (isNewElement) {
+        card.classList.add("animate-bounce", "border-indigo-500/100");
+        setTimeout(() => card.classList.remove("animate-bounce", "border-indigo-500/100"), 5000);
       }
       document.getElementById('cardContainer').prepend(card);
-      
+
     }
-    let count; // Declare count globally
-//     var map = L.map('map').setView([9.41373, 76.641], 2);
-// L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-//     maxZoom: 19,
-//     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-// }).addTo(map);
-var popup = L.popup();
+    let count;
+    var popup = L.popup();
+    async function start() {
+      let { data, count: rowCount, error } = await supabase
+        .from('SOSAlerts')
+        .select('*', { count: 'exact' });
 
-// function onMapClick(e) {
-//     popup
-//         .setLatLng(e.latlng)
-//         .setContent("You clicked the map at " + e.latlng.toString())
-//         .openOn(map);
-// }
-
-// map.on('click', onMapClick);
-async function start() {
-  // Fetch initial data and row count
-  let { data, count: rowCount, error } = await supabase
-    .from('SOSAlerts')
-    .select('*', { count: 'exact' });
-
-  if (error) {
-    console.error("Error fetching row count:", error);
-  } else {
-    console.log(data)
-    count = rowCount;  // Set global count value
-    document.getElementById('sos-count').textContent = count;
-    data.forEach((element) => {
-      createCard(element,false);
-    });
-    // data.forEach((row) => {
-    //   var marker = L.marker([row.latitude, row.longitude]).addTo(map);
-    //   console.log(row.longitude, row.latitude);
-    // });
-  }
-
-  // Set up real-time subscription for inserts to SOSAlerts
-  const changes = await supabase.channel('custom-insert-channel')
-    .on(
-      'postgres_changes',
-      { event: 'INSERT', schema: 'public', table: 'SOSAlerts' },
-      (payload) => {
-        if (payload.eventType === 'INSERT') {
-          console.log(payload);
-          showAlert(`${payload.new.UserName} has sent an SOS`);
-          createCard(payload.new,true);
-
-          // Increment count on new insert
-          count++;  // Increment global count
-          document.getElementById('sos-count').textContent = count;  // Update UI with new count
-        }
+      if (error) {
+        console.error("Error fetching row count:", error);
+      } else {
+        console.log(data)
+        count = rowCount;  // Set global count value
+        document.getElementById('sos-count').textContent = count;
+        data.forEach((element) => {
+          createCard(element, false);
+        });
       }
-    )
-    .subscribe();
-}
 
-// Call start() to fetch the initial data and set up the subscription
-start();
+      // Set up real-time subscription for inserts to SOSAlerts
+      const changes = await supabase.channel('custom-insert-channel')
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'SOSAlerts' },
+          (payload) => {
+            if (payload.eventType === 'INSERT') {
+              console.log(payload);
+              showAlert(`${payload.new.UserName} has sent an SOS`);
+              createCard(payload.new, true);
+
+              // Increment count on new insert
+              count++;  // Increment global count
+              document.getElementById('sos-count').textContent = count;  // Update UI with new count
+            }
+          }
+        )
+        .subscribe();
+    }
+
+    // Call start() to fetch the initial data and set up the subscription
+    start();
+
+
 
 
   </script>
 </div>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyApXfKLYabz87ie0XjnghtDKLDkzq7nesM&callback=initMap" async
+  defer></script>
+
+  <script>
+    let map;
+  
+    function initMap() {
+      map = new google.maps.Map(document.getElementById("map"), {
+        center: { lat: 9.41373, lng: 76.641 }, // Default location
+        zoom: 5,
+        styles: [
+          { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
+          { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
+          { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
+          {
+            featureType: "administrative.locality",
+            elementType: "labels.text.fill",
+            stylers: [{ color: "#d59563" }],
+          },
+          {
+            featureType: "poi",
+            elementType: "labels.text.fill",
+            stylers: [{ color: "#d59563" }],
+          },
+          {
+            featureType: "poi.park",
+            elementType: "geometry",
+            stylers: [{ color: "#263c3f" }],
+          },
+          {
+            featureType: "poi.park",
+            elementType: "labels.text.fill",
+            stylers: [{ color: "#6b9a76" }],
+          },
+          {
+            featureType: "road",
+            elementType: "geometry",
+            stylers: [{ color: "#38414e" }],
+          },
+          {
+            featureType: "road",
+            elementType: "geometry.stroke",
+            stylers: [{ color: "#212a37" }],
+          },
+          {
+            featureType: "road",
+            elementType: "labels.text.fill",
+            stylers: [{ color: "#9ca5b3" }],
+          },
+          {
+            featureType: "road.highway",
+            elementType: "geometry",
+            stylers: [{ color: "#746855" }],
+          },
+          {
+            featureType: "road.highway",
+            elementType: "geometry.stroke",
+            stylers: [{ color: "#1f2835" }],
+          },
+          {
+            featureType: "road.highway",
+            elementType: "labels.text.fill",
+            stylers: [{ color: "#f3d19c" }],
+          },
+          {
+            featureType: "transit",
+            elementType: "geometry",
+            stylers: [{ color: "#2f3948" }],
+          },
+          {
+            featureType: "transit.station",
+            elementType: "labels.text.fill",
+            stylers: [{ color: "#d59563" }],
+          },
+          {
+            featureType: "water",
+            elementType: "geometry",
+            stylers: [{ color: "#17263c" }],
+          },
+          {
+            featureType: "water",
+            elementType: "labels.text.fill",
+            stylers: [{ color: "#515c6d" }],
+          },
+          {
+            featureType: "water",
+            elementType: "labels.text.stroke",
+            stylers: [{ color: "#1d232a" }],
+          },
+        ],
+      });
+  
+      fetch("/get_sos_locations")
+        .then(response => response.json())
+        .then(data => {
+          data.forEach(sos => {
+            let marker = new google.maps.Marker({
+              position: { lat: parseFloat(sos.latitude), lng: parseFloat(sos.longitude) },
+              map: map,
+              title: sos.UserName + " - " + sos.distress_type,
+            });
+  
+            let infoWindow = new google.maps.InfoWindow({
+              content: `
+                <div style="color: black;">
+                  <h3>${sos.UserName}</h3>
+                  <p><strong>Disaster Type:</strong> ${sos.distress_type}</p>
+                  <p><strong>Time:</strong> ${sos.timestamp}</p>
+                  <p><strong>Message:</strong> ${sos.message || "No message provided"}</p>
+                </div>
+              `,
+            });
+  
+            marker.addListener("click", () => {
+              infoWindow.open(map, marker);
+            });
+          });
+        });
+    }
+  </script>
+  
+
+
 {% endblock %}

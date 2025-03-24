@@ -3,6 +3,7 @@ from flask import render_template, request, jsonify, session, redirect,url_for,f
 from dotenv import load_dotenv
 from functools import wraps
 import os
+# import openmeteo_requests
 
 import requests
 from disasterResponse import supabase
@@ -91,3 +92,12 @@ def webhook():
         data = request.json
         print(data)
         return jsonify(data)
+    
+@app.route("/get_sos_locations", methods=["GET"])
+def get_sos_locations():
+    try:
+        response = supabase.table("SOSAlerts").select("*").execute()
+        data = response.data
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
