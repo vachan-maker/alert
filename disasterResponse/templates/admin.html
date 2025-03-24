@@ -69,7 +69,7 @@
     var popup = L.popup();
 
     
-    async function start() {
+  async function start() {
       let { data, count: rowCount, error } = await supabase
         .from('SOSAlerts')
         .select('*', { count: 'exact' });
@@ -117,7 +117,7 @@
 
 
     // Call start() to fetch the initial data and set up the subscription
-    start();
+  start();
 
 async function subscribeToSOSUpdates() {
   const { data, error } = await supabase
