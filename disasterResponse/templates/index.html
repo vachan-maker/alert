@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block body %}
-<!-- JavaScript to Get Location -->
 <script>
+  
   function getUserLocation() {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -17,6 +17,7 @@
       console.error("Geolocation is not supported by this browser.");
     }
   }
+  window.onload = getUserLocation();
 </script>
 <div class="px-7">
   <div class="min-h-96 rounded-xl flex items-center justify-center bg-linear-to-r from-cyan-500 to-blue-500">
