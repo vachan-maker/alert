@@ -61,11 +61,44 @@ const url = "https://api.open-meteo.com/v1/forecast";
 
 </script>
 <div class="px-30">
-  <div class="min-h-96 rounded-xl flex items-center justify-center bg-linear-to-r from-cyan-500 to-blue-500">
-    <h1 class="font-extrabold text-center text-7xl">ALERT</h1>
-
+  <div class="min-h-96 rounded-xl flex items-center justify-center bg-gradient-to-r from-cyan-500 to-blue-500 animate-gradient">
+    <h1 class="font-extrabold text-center text-7xl text-white animate-alert">
+      ALERT
+    </h1>
   </div>
 </div>
+
+<style>
+  /* Moving Background Animation */
+  @keyframes gradientMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .animate-gradient {
+    background-size: 200% 200%;
+    animation: gradientMove 5s infinite alternate ease-in-out;
+  }
+
+  /* Glowing Effect */
+  @keyframes glow {
+    0%, 100% { text-shadow: 0 0 10px red, 0 0 20px red; }
+    50% { text-shadow: 0 0 5px red, 0 0 10px red; }
+  }
+
+  /* Gentle Shake Effect */
+  @keyframes softShake {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(2px); }
+  }
+
+  .animate-alert {
+    animation: glow 1.5s infinite alternate ease-in-out, 
+               softShake 1.5s infinite ease-in-out;
+  }
+</style>
+
 
 <div class="px-30 mt-7 w-full">
   <div class="stats shadow w-full">
