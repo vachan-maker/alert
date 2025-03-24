@@ -31,7 +31,7 @@
     return weatherMap[code] || { description: "Unknown Weather", icon: "❓" };
 }
   async function getWeather(latitude, longitude) {
-  fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weathercode`)
+  fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weathercode,rain`)
   .then(response => response.json())
   .then(data => {
       console.log("Weather Data:", data);
@@ -106,10 +106,11 @@ const url = "https://api.open-meteo.com/v1/forecast";
         <dialog id="my_modal_1" class="modal">
           <div class="modal-box">
             <form action="/sos" method="post">
-              <select class="select select-primary w-full max-w my-4">
-                <option>Medical</option>
-                <option>Flood</option>
-                <option>Other</option>
+              <select class="select select-primary w-full max-w my-4" name="emergency" id="emergency">
+                <option value="medical">Medical Emergency</option>
+                <option value="fire">Fire</option>
+                <option value="flood">Flood</option>
+                <option value="other">Other Emergency</option>
               </select>
               <input type="button" class="btn btn-warning btn-md w-full" onclick="getUserLocation()"
                 value="Tap to send location!" />
@@ -117,9 +118,6 @@ const url = "https://api.open-meteo.com/v1/forecast";
               <input type="hidden" name="longitude" id="longitude">
               <input type="hidden" name="latitude" id="latitude">
               <div id="map"></div>
-              <script>
-                var map = L.map('map').setView([51.505, -0.09], 13);
-              </script>
               <div class="modal-action">
                 <form method="dialog">
                   <button class="btn btn-md w-full">🚨 Send SOS!</button>

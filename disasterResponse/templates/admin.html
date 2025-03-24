@@ -119,6 +119,24 @@
     // Call start() to fetch the initial data and set up the subscription
     start();
 
+async function subscribeToSOSUpdates() {
+  const { data, error } = await supabase
+    .channel('custom-insert-channel')
+    .on(
+      'postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'SOSAlerts' },
+      (payload) => {
+        if (payload.eventType === 'INSERT') {
+          console.log("New SOS Alert received:", payload.new);
+          
+          // Show an alert to notify about the new SOS
+          showAlert(`${payload.new.UserName} has sent an SOS`);
+          createCard(payload, isNewElement = true);
+        }
+      }
+    )
+    .subscribe();
+}
 
 
 
