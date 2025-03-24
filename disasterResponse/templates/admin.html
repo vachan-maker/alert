@@ -1,8 +1,6 @@
 {% extends "layout.html" %}
 
 {% block body %}
-<style>
-</style>
 <div class="px-7">
   <div class="min-h-96 rounded-xl flex items-center justify-center bg-gradient-to-r from-cyan-500 to-blue-500">
     <div>
@@ -11,6 +9,7 @@
     </div>
   </div>
 </div>
+
 <div class="px-7 mt-7">
   <div class="flex flex-row justify-between">
     <div class="flex flex-col">
@@ -19,85 +18,86 @@
         <div class="inline-grid *:[grid-area:1/1]">
           <div class="status status-success animate-ping"></div>
           <div class="status status-success"></div>
-        </div> Connected to the server
+        </div>
+        Connected to the server
       </div>
+
       <div class="stats shadow bg-error">
         <div class="stat">
           <div class="stat-title">No. of SOS Alerts!</div>
           <div class="stat-value" id="sos-count"></div>
         </div>
       </div>
+
       <h3 class="text-2xl my-5">Distress Signals</h3>
       <div id="cardContainer" class="flex flex-col h-96 overflow-auto border-accent rounded-2xl w-fit my-4"></div>
     </div>
     <div id="map" class="w-4xl rounded-2xl"></div>
   </div>
-  <div id="toastContainer" class="toast toast-end"></div>
-
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-    const supabase = createClient('https://ljncaafiuqjlrnruxirq.supabase.co', 'SUPABASE_ANON_KEY');
-    
-    function showAlert(message) {
-      const toast = document.createElement("div");
-      toast.classList.add("toast", "toast-end");
-      toast.innerHTML = `
-      <div class="alert alert-warning">
-        <span>${message}</span>
-      </div>
-      `;
-      document.getElementById('toastContainer').appendChild(toast);
-      setTimeout(() => toast.remove(), 6000);
-    }
-    
-    function createCard(data, isNew = false) {
-      const card = document.createElement("div");
-      card.classList.add("card", "w-96", "bg-base-200", "shadow-lg", "rounded-box", "my-4");
-      card.innerHTML = `
-        <div class="card-body">
-          <h2 class="card-title">${data.UserName}</h2>
-          <p class="text-base">Distress Type: <span class="font-bold">${data.distress_type}</span></p>
-        </div>
-      `;
-      if (isNew) {
-        card.classList.add("animate-bounce", "border-indigo-500/100");
-        setTimeout(() => card.classList.remove("animate-bounce", "border-indigo-500/100"), 5000);
-      }
-      document.getElementById('cardContainer').prepend(card);
-    }
-    
-    async function start() {
-      let { data, count, error } = await supabase.from('SOSAlerts').select('*', { count: 'exact' });
-      if (error) console.error("Error fetching alerts:", error);
-      else {
-        document.getElementById('sos-count').textContent = count;
-        data.forEach(alert => createCard(alert, false));
-      }
-      
-      supabase.channel('sos-insert')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'SOSAlerts' }, payload => {
-          showAlert(`${payload.new.UserName} has sent an SOS`);
-          createCard(payload.new, true);
-          document.getElementById('sos-count').textContent = ++count;
-          if (window.addMarker) addMarker(payload.new);
-        })
-        .subscribe();
-    }
-    
-    start();
-  </script>
 </div>
 
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyApXfKLYabz87ie0XjnghtDKLDkzq7nesM&callback=initMap" async defer></script>
-<script>
-  function initMap() {
+<div id="toastContainer" class="toast toast-end"></div>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+  
+  const supabase = createClient(
+    'https://ljncaafiuqjlrnruxirq.supabase.co',
+    'your-public-anon-key'
+  );
+
+  function showAlert(message) {
+    const toast = document.createElement("div");
+    toast.classList.add("toast", "toast-end");
+    toast.innerHTML = `<div class="alert alert-warning"><span>${message}</span></div>`;
+    document.getElementById('toastContainer').appendChild(toast);
+    setTimeout(() => toast.remove(), 6000);
+  }
+
+  function createCard(alert, isNew = false) {
+    const card = document.createElement("div");
+    card.classList.add("card", "w-96", "bg-base-200", "shadow-lg", "rounded-box", "my-4");
+    card.innerHTML = `
+      <div class="card-body">
+        <h2 class="card-title">${alert.UserName}</h2>
+        <p class="text-base">Distress Type: <span class="font-bold">${alert.distress_type}</span></p>
+      </div>
+    `;
+    if (isNew) {
+      card.classList.add("animate-bounce", "border-indigo-500/100");
+      setTimeout(() => card.classList.remove("animate-bounce", "border-indigo-500/100"), 5000);
+    }
+    document.getElementById('cardContainer').prepend(card);
+  }
+
+  async function start() {
+    let { data, count, error } = await supabase.from('SOSAlerts').select('*', { count: 'exact' });
+    if (error) return console.error("Error fetching alerts:", error);
+    document.getElementById('sos-count').textContent = count;
+    data.forEach(alert => createCard(alert, false));
+  }
+
+  async function subscribeToSOSUpdates() {
+    const { error } = await supabase.channel('custom-insert-channel')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'SOSAlerts' }, (payload) => {
+        console.log("New SOS Alert:", payload.new);
+        showAlert(`${payload.new.UserName} has sent an SOS`);
+        createCard(payload.new, true);
+        document.getElementById('sos-count').textContent++;
+        if (window.addMarker) addMarker(payload.new);
+      })
+      .subscribe();
+    if (error) console.error("Subscription error:", error);
+  }
+
+  window.initMap = function () {
     window.map = new google.maps.Map(document.getElementById("map"), {
       center: { lat: 9.41373, lng: 76.641 },
       zoom: 5,
+      styles: [/* Map styles here */],
     });
-    
     fetch("/get_sos_locations")
-      .then(res => res.json())
+      .then(response => response.json())
       .then(data => {
         data.forEach(sos => {
           let marker = new google.maps.Marker({
@@ -106,11 +106,19 @@
             title: `${sos.UserName} - ${sos.distress_type}`,
           });
           let infoWindow = new google.maps.InfoWindow({
-            content: `<div><h3>${sos.UserName}</h3><p><strong>Type:</strong> ${sos.distress_type}</p></div>`
+            content: `<div style="color: black;"><h3>${sos.UserName}</h3>
+                      <p><strong>Disaster Type:</strong> ${sos.distress_type}</p>
+                      <p><strong>Time:</strong> ${sos.timestamp}</p>
+                      <p><strong>Message:</strong> ${sos.message || "No message provided"}</p></div>`
           });
           marker.addListener("click", () => infoWindow.open(window.map, marker));
         });
       });
-  }
+    subscribeToSOSUpdates();
+  };
+
+  start();
 </script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyApXfKLYabz87ie0XjnghtDKLDkzq7nesM&callback=initMap" async defer></script>
 {% endblock %}
