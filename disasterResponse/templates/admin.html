@@ -88,7 +88,7 @@
       (payload) => {
         if (payload.eventType === 'INSERT') {
           console.log("New SOS Alert received:", payload.new);
-          
+
           showAlert(`${payload.new.UserName} has sent an SOS`);
           createCard(payload.new, true);
 
@@ -105,12 +105,12 @@
             },
             map: map,
             title: `${payload.new.UserName} - ${payload.new.distress_type}`,
-            animation: google.maps.Animation.DROP, // Drop animation added here
+            animation: google.maps.Animation.DROP, 
           });
 
           let infoWindow = new google.maps.InfoWindow({
             content: `
-              <div style="color: black;">
+              <div id="info-${payload.new.id}" style="color: black; transition: opacity 1s;">
                 <h3>${payload.new.UserName}</h3>
                 <p><strong>Disaster Type:</strong> ${payload.new.distress_type}</p>
                 <p><strong>Time:</strong> ${payload.new.timestamp}</p>
@@ -118,6 +118,18 @@
               </div>
             `,
           });
+
+          // Open InfoWindow when a new SOS is added
+          infoWindow.open(map, marker);
+
+          // Automatically fade out and close the InfoWindow after 5 seconds
+          setTimeout(() => {
+            let infoDiv = document.getElementById(`info-${payload.new.id}`);
+            if (infoDiv) {
+              infoDiv.style.opacity = "0"; // Fade out effect
+            }
+            setTimeout(() => infoWindow.close(), 1000); // Close after fade-out
+          }, 5000);
 
           marker.addListener("click", () => {
             infoWindow.open(map, marker);
@@ -134,6 +146,7 @@
     console.error("Error subscribing to SOS updates:", error);
   }
 }
+
 
 
 
