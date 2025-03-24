@@ -82,11 +82,32 @@
           createCard(element, false);
         });
       }
-      
+
+      // Set up real-time subscription for inserts to SOSAlerts
+      const changes = await supabase.channel('custom-insert-channel')
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'SOSAlerts' },
+          (payload) => {
+            if (payload.eventType === 'INSERT') {
+              console.log(payload);
+              showAlert(`${payload.new.UserName} has sent an SOS`);
+              createCard(payload.new, true);
+
+              // Increment count on new insert
+              count++;  // Increment global count
+              document.getElementById('sos-count').textContent = count;  // Update UI with new count
+            }
+          }
+        )
+        .subscribe();
     }
 
     // Call start() to fetch the initial data and set up the subscription
     start();
+
+// Array to store the last 10 markers
+let sosMarkers = [];
 
 async function subscribeToSOSUpdates() {
   const { data, error } = await supabase
@@ -97,11 +118,11 @@ async function subscribeToSOSUpdates() {
       (payload) => {
         if (payload.eventType === 'INSERT') {
           console.log("New SOS Alert received:", payload.new);
-          
-          // Show an alert to notify about the new SOS
-          showAlert(`${payload.new.UserName} has sent an SOS`);
 
-          // Create a marker dynamically
+          // Show animated pop-up
+          showAnimatedAlert(`${payload.new.UserName} has sent an SOS`);
+
+          // Create a new marker
           let marker = new google.maps.Marker({
             position: { 
               lat: parseFloat(payload.new.latitude), 
@@ -127,6 +148,15 @@ async function subscribeToSOSUpdates() {
             infoWindow.open(map, marker);
           });
 
+          // Add the new marker to the array
+          sosMarkers.push(marker);
+
+          // Limit to 10 latest markers
+          if (sosMarkers.length > 10) {
+            let oldestMarker = sosMarkers.shift(); // Remove oldest marker
+            oldestMarker.setMap(null); // Remove from map
+          }
+
           // Increment count on new insert
           count++;
           document.getElementById('sos-count').textContent = count;
@@ -140,8 +170,48 @@ async function subscribeToSOSUpdates() {
   }
 }
 
+// Function for animated pop-up alert
+function showAnimatedAlert(message) {
+  let alertBox = document.createElement("div");
+  alertBox.className = "sos-alert";
+  alertBox.innerHTML = message;
+  
+  document.body.appendChild(alertBox);
+  
+  // Fade-in animation
+  setTimeout(() => {
+    alertBox.style.opacity = "1";
+    alertBox.style.transform = "translateY(0)";
+  }, 100);
+
+  // Remove after 5 seconds with fade-out effect
+  setTimeout(() => {
+    alertBox.style.opacity = "0";
+    alertBox.style.transform = "translateY(-20px)";
+    setTimeout(() => alertBox.remove(), 500); // Remove from DOM
+  }, 5000);
+}
+
 // Call the function to start real-time updates after initializing the map
 subscribeToSOSUpdates();
+
+<style>
+  .sos-alert {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #ff4d4d;
+  color: white;
+  padding: 12px 20px;
+  font-size: 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  z-index: 1000;
+}
+</style>
 
 
   </script>
