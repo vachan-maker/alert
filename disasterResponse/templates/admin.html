@@ -39,72 +39,48 @@
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
     // Create a single supabase client for interacting with your database
     const supabase = createClient('https://ljncaafiuqjlrnruxirq.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxqbmNhYWZpdXFqbHJucnV4aXJxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzkzNjE1ODMsImV4cCI6MjA1NDkzNzU4M30.p66vJW72EXOPI7khL1Nb8_qwv-W-DnU_Pk0UH_uBMGc')
-    function showAlert(message) {
-      const toast = document.createElement("div");
-      toast.classList.add("toast", "toast-end");
-      toast.innerHTML = `
-      <div class="alert alert-warning">
-        <span>${message}</span>
-      </div>
-      `;
-      document.getElementById('toastContainer').appendChild(toast);
-      setTimeout(() => toast.remove(), 6000);
-    }
-    function createCard(message2, isNewElement = false) {
-      const card = document.createElement("div");
-      card.classList.add("card", "w-96", "bg-base-200", "card-sm", "shadow-lg", "rounded-box", "my-4");
-      card.innerHTML = `
-       <div class="card-body">
-    <h2 class="card-title">${message2.UserName}</h2>
-    <p class="text-base">Distrss Type: <span class = "font-bold">${message2.distress_type}</span></p>
-  </div>`;
-      if (isNewElement) {
-        card.classList.add("animate-bounce", "border-indigo-500/100");
-        setTimeout(() => card.classList.remove("animate-bounce", "border-indigo-500/100"), 5000);
+
+async function start() {
+  let { data, count: rowCount, error } = await supabase
+    .from('SOSAlerts')
+    .select('*', { count: 'exact' });
+
+  if (error) {
+    console.error("Error fetching row count:", error);
+  } else {
+    console.log(data);
+    count = rowCount;  // Set global count value
+    document.getElementById('sos-count').textContent = count;
+    data.forEach((element) => {
+      createCard(element, false);
+    });
+  }
+
+  // Set up real-time subscription for inserts to SOSAlerts
+  const changes = await supabase.channel('custom-insert-channel')
+    .on(
+      'postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'SOSAlerts' },
+      (payload) => {
+        if (payload.eventType === 'INSERT') {
+          console.log(payload);
+          
+          // Show both toast and animated alert
+          showAlert(`${payload.new.UserName} has sent an SOS`);
+          showAnimatedAlert(`${payload.new.UserName} has sent an SOS`);
+          
+          createCard(payload.new, true);
+
+          // Increment count on new insert
+          count++;
+          document.getElementById('sos-count').textContent = count;
+        }
       }
-      document.getElementById('cardContainer').prepend(card);
+    )
+    .subscribe();
+}
 
-    }
-    let count;
-    var popup = L.popup();
-    async function start() {
-      let { data, count: rowCount, error } = await supabase
-        .from('SOSAlerts')
-        .select('*', { count: 'exact' });
-
-      if (error) {
-        console.error("Error fetching row count:", error);
-      } else {
-        console.log(data)
-        count = rowCount;  // Set global count value
-        document.getElementById('sos-count').textContent = count;
-        data.forEach((element) => {
-          createCard(element, false);
-        });
-      }
-
-      // Set up real-time subscription for inserts to SOSAlerts
-      const changes = await supabase.channel('custom-insert-channel')
-        .on(
-          'postgres_changes',
-          { event: 'INSERT', schema: 'public', table: 'SOSAlerts' },
-          (payload) => {
-            if (payload.eventType === 'INSERT') {
-              console.log(payload);
-              showAlert(`${payload.new.UserName} has sent an SOS`);
-              createCard(payload.new, true);
-
-              // Increment count on new insert
-              count++;  // Increment global count
-              document.getElementById('sos-count').textContent = count;  // Update UI with new count
-            }
-          }
-        )
-        .subscribe();
-    }
-
-    // Call start() to fetch the initial data and set up the subscription
-    start();
+start();
 
 // Array to store the last 10 markers
 let sosMarkers = [];
@@ -119,7 +95,8 @@ async function subscribeToSOSUpdates() {
         if (payload.eventType === 'INSERT') {
           console.log("New SOS Alert received:", payload.new);
 
-          // Show animated pop-up
+          // Show both toast and animated pop-up
+          showAlert(`${payload.new.UserName} has sent an SOS`);
           showAnimatedAlert(`${payload.new.UserName} has sent an SOS`);
 
           // Create a new marker
@@ -170,6 +147,8 @@ async function subscribeToSOSUpdates() {
   }
 }
 
+subscribeToSOSUpdates();
+
 // Function for animated pop-up alert
 function showAnimatedAlert(message) {
   let alertBox = document.createElement("div");
@@ -192,26 +171,39 @@ function showAnimatedAlert(message) {
   }, 5000);
 }
 
-// Call the function to start real-time updates after initializing the map
-subscribeToSOSUpdates();
-
-<style>
-  .sos-alert {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  background: #ff4d4d;
-  color: white;
-  padding: 12px 20px;
-  font-size: 16px;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  opacity: 0;
-  transform: translateY(-20px);
-  transition: opacity 0.5s ease, transform 0.5s ease;
-  z-index: 1000;
+// Toast alert function (restored)
+function showAlert(message) {
+  const toast = document.createElement("div");
+  toast.classList.add("toast", "toast-end");
+  toast.innerHTML = `
+    <div class="alert alert-warning">
+      <span>${message}</span>
+    </div>
+  `;
+  document.getElementById('toastContainer').appendChild(toast);
+  setTimeout(() => toast.remove(), 6000);
 }
-</style>
+
+// CSS for animated pop-up
+const style = document.createElement("style");
+style.innerHTML = `
+  .sos-alert {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #ff4d4d;
+    color: white;
+    padding: 12px 20px;
+    font-size: 16px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    z-index: 1000;
+  }
+`;
+document.head.appendChild(style);
 
 
   </script>
