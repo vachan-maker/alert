@@ -65,24 +65,9 @@
       document.getElementById('cardContainer').prepend(card);
 
     }
-    let count; // Declare count globally
-    //     var map = L.map('map').setView([9.41373, 76.641], 2);
-    // L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    //     maxZoom: 19,
-    //     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    // }).addTo(map);
+    let count;
     var popup = L.popup();
-
-    // function onMapClick(e) {
-    //     popup
-    //         .setLatLng(e.latlng)
-    //         .setContent("You clicked the map at " + e.latlng.toString())
-    //         .openOn(map);
-    // }
-
-    // map.on('click', onMapClick);
     async function start() {
-      // Fetch initial data and row count
       let { data, count: rowCount, error } = await supabase
         .from('SOSAlerts')
         .select('*', { count: 'exact' });
@@ -96,10 +81,6 @@
         data.forEach((element) => {
           createCard(element, false);
         });
-        // data.forEach((row) => {
-        //   var marker = L.marker([row.latitude, row.longitude]).addTo(map);
-        //   console.log(row.longitude, row.latitude);
-        // });
       }
 
       // Set up real-time subscription for inserts to SOSAlerts
