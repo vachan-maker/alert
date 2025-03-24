@@ -100,6 +100,7 @@ async function subscribeToSOSUpdates() {
           
           // Show an alert to notify about the new SOS
           showAlert(`${payload.new.UserName} has sent an SOS`);
+          createCard(payload, isNewElement = true) 
 
           // Create a marker dynamically
           let marker = new google.maps.Marker({
