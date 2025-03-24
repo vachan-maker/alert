@@ -121,5 +121,31 @@ start();
 
 
   </script>
-</div>
+  </div>
+
+
+  <script src="https://maps.googleapis.com/maps/api/js?key=MAPS_KEY&callback=initMap" async defer></script>
+  <script>
+    let map;
+  
+    function initMap() {
+      map = new google.maps.Map(document.getElementById("map"), {
+        center: { lat: 9.41373, lng: 76.641 }, // Default location
+        zoom: 5,
+      });
+  
+      fetch("/get_sos_locations")
+        .then(response => response.json())
+        .then(data => {
+          data.forEach(sos => {
+            new google.maps.Marker({
+              position: { lat: parseFloat(sos.latitude), lng: parseFloat(sos.longitude) },
+              map: map,
+              title: sos.UserName + " - " + sos.distress_type,
+            });
+          });
+        });
+    }
+  </script>
+  
 {% endblock %}
