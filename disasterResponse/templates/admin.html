@@ -82,29 +82,66 @@
           createCard(element, false);
         });
       }
-
-      // Set up real-time subscription for inserts to SOSAlerts
-      const changes = await supabase.channel('custom-insert-channel')
-        .on(
-          'postgres_changes',
-          { event: 'INSERT', schema: 'public', table: 'SOSAlerts' },
-          (payload) => {
-            if (payload.eventType === 'INSERT') {
-              console.log(payload);
-              showAlert(`${payload.new.UserName} has sent an SOS`);
-              createCard(payload.new, true);
-
-              // Increment count on new insert
-              count++;  // Increment global count
-              document.getElementById('sos-count').textContent = count;  // Update UI with new count
-            }
-          }
-        )
-        .subscribe();
+      
     }
 
     // Call start() to fetch the initial data and set up the subscription
     start();
+
+async function subscribeToSOSUpdates() {
+  const { data, error } = await supabase
+    .channel('custom-insert-channel')
+    .on(
+      'postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'SOSAlerts' },
+      (payload) => {
+        if (payload.eventType === 'INSERT') {
+          console.log("New SOS Alert received:", payload.new);
+          
+          // Show an alert to notify about the new SOS
+          showAlert(`${payload.new.UserName} has sent an SOS`);
+
+          // Create a marker dynamically
+          let marker = new google.maps.Marker({
+            position: { 
+              lat: parseFloat(payload.new.latitude), 
+              lng: parseFloat(payload.new.longitude) 
+            },
+            map: map,
+            title: `${payload.new.UserName} - ${payload.new.distress_type}`,
+          });
+
+          // Attach an info window with details
+          let infoWindow = new google.maps.InfoWindow({
+            content: `
+              <div style="color: black;">
+                <h3>${payload.new.UserName}</h3>
+                <p><strong>Disaster Type:</strong> ${payload.new.distress_type}</p>
+                <p><strong>Time:</strong> ${payload.new.timestamp}</p>
+                <p><strong>Message:</strong> ${payload.new.message || "No message provided"}</p>
+              </div>
+            `,
+          });
+
+          marker.addListener("click", () => {
+            infoWindow.open(map, marker);
+          });
+
+          // Increment count on new insert
+          count++;
+          document.getElementById('sos-count').textContent = count;
+        }
+      }
+    )
+    .subscribe();
+
+  if (error) {
+    console.error("Error subscribing to SOS updates:", error);
+  }
+}
+
+// Call the function to start real-time updates after initializing the map
+subscribeToSOSUpdates();
 
 
   </script>
