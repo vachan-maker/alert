@@ -56,7 +56,7 @@
       card.innerHTML = `
        <div class="card-body">
     <h2 class="card-title">${message2.UserName}</h2>
-    <p class="text-base">Distrss Type: <span class = "font-bold">${message2.distress_type}</span></p>
+    <p class="text-base">Distress Type: <span class = "font-bold">${message2.distress_type}</span></p>
   </div>`;
       if (isNewElement) {
         card.classList.add("animate-bounce", "border-indigo-500/100");
@@ -82,12 +82,31 @@
           createCard(element, false);
         });
       }
-      
+
+      // Set up real-time subscription for inserts to SOSAlerts
+      const changes = await supabase.channel('custom-insert-channel')
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'SOSAlerts' },
+          (payload) => {
+            if (payload.eventType === 'INSERT') {
+              console.log(payload);
+              showAlert(`${payload.new.UserName} has sent an SOS`);
+              createCard(payload.new, true);
+
+              // Increment count on new insert
+              count++;  // Increment global count
+              document.getElementById('sos-count').textContent = count;  // Update UI with new count
+            }
+          }
+        )
+        .subscribe();
     }
 
     // Call start() to fetch the initial data and set up the subscription
     start();
 
+<<<<<<< HEAD
 async function subscribeToSOSUpdates() {
   const { data, error } = await supabase
     .channel('custom-insert-channel')
@@ -101,48 +120,9 @@ async function subscribeToSOSUpdates() {
           // Show an alert to notify about the new SOS
           showAlert(`${payload.new.UserName} has sent an SOS`);
           createCard(payload, isNewElement = true) 
+=======
+>>>>>>> main
 
-          // Create a marker dynamically
-          let marker = new google.maps.Marker({
-            position: { 
-              lat: parseFloat(payload.new.latitude), 
-              lng: parseFloat(payload.new.longitude) 
-            },
-            map: map,
-            title: `${payload.new.UserName} - ${payload.new.distress_type}`,
-          });
-
-          // Attach an info window with details
-          let infoWindow = new google.maps.InfoWindow({
-            content: `
-              <div style="color: black;">
-                <h3>${payload.new.UserName}</h3>
-                <p><strong>Disaster Type:</strong> ${payload.new.distress_type}</p>
-                <p><strong>Time:</strong> ${payload.new.timestamp}</p>
-                <p><strong>Message:</strong> ${payload.new.message || "No message provided"}</p>
-              </div>
-            `,
-          });
-
-          marker.addListener("click", () => {
-            infoWindow.open(map, marker);
-          });
-
-          // Increment count on new insert
-          count++;
-          document.getElementById('sos-count').textContent = count;
-        }
-      }
-    )
-    .subscribe();
-
-  if (error) {
-    console.error("Error subscribing to SOS updates:", error);
-  }
-}
-
-// Call the function to start real-time updates after initializing the map
-subscribeToSOSUpdates();
 
 
   </script>
@@ -153,121 +133,90 @@ subscribeToSOSUpdates();
 
   <script>
     let map;
+    let sosMarkers = [];
   
     function initMap() {
       map = new google.maps.Map(document.getElementById("map"), {
-        center: { lat: 9.41373, lng: 76.641 }, // Default location
+        center: { lat: 9.41373, lng: 76.641 },
         zoom: 5,
         styles: [
           { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
           { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
           { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
-          {
-            featureType: "administrative.locality",
-            elementType: "labels.text.fill",
-            stylers: [{ color: "#d59563" }],
-          },
-          {
-            featureType: "poi",
-            elementType: "labels.text.fill",
-            stylers: [{ color: "#d59563" }],
-          },
-          {
-            featureType: "poi.park",
-            elementType: "geometry",
-            stylers: [{ color: "#263c3f" }],
-          },
-          {
-            featureType: "poi.park",
-            elementType: "labels.text.fill",
-            stylers: [{ color: "#6b9a76" }],
-          },
-          {
-            featureType: "road",
-            elementType: "geometry",
-            stylers: [{ color: "#38414e" }],
-          },
-          {
-            featureType: "road",
-            elementType: "geometry.stroke",
-            stylers: [{ color: "#212a37" }],
-          },
-          {
-            featureType: "road",
-            elementType: "labels.text.fill",
-            stylers: [{ color: "#9ca5b3" }],
-          },
-          {
-            featureType: "road.highway",
-            elementType: "geometry",
-            stylers: [{ color: "#746855" }],
-          },
-          {
-            featureType: "road.highway",
-            elementType: "geometry.stroke",
-            stylers: [{ color: "#1f2835" }],
-          },
-          {
-            featureType: "road.highway",
-            elementType: "labels.text.fill",
-            stylers: [{ color: "#f3d19c" }],
-          },
-          {
-            featureType: "transit",
-            elementType: "geometry",
-            stylers: [{ color: "#2f3948" }],
-          },
-          {
-            featureType: "transit.station",
-            elementType: "labels.text.fill",
-            stylers: [{ color: "#d59563" }],
-          },
-          {
-            featureType: "water",
-            elementType: "geometry",
-            stylers: [{ color: "#17263c" }],
-          },
-          {
-            featureType: "water",
-            elementType: "labels.text.fill",
-            stylers: [{ color: "#515c6d" }],
-          },
-          {
-            featureType: "water",
-            elementType: "labels.text.stroke",
-            stylers: [{ color: "#1d232a" }],
-          },
+          { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
+          { featureType: "poi", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
+          { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#263c3f" }] },
+          { featureType: "poi.park", elementType: "labels.text.fill", stylers: [{ color: "#6b9a76" }] },
+          { featureType: "road", elementType: "geometry", stylers: [{ color: "#38414e" }] },
+          { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#212a37" }] },
+          { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#9ca5b3" }] },
+          { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#746855" }] },
+          { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#1f2835" }] },
+          { featureType: "road.highway", elementType: "labels.text.fill", stylers: [{ color: "#f3d19c" }] },
+          { featureType: "transit", elementType: "geometry", stylers: [{ color: "#2f3948" }] },
+          { featureType: "transit.station", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
+          { featureType: "water", elementType: "geometry", stylers: [{ color: "#17263c" }] },
+          { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#515c6d" }] },
+          { featureType: "water", elementType: "labels.text.stroke", stylers: [{ color: "#1d232a" }] }
         ],
       });
   
       fetch("/get_sos_locations")
         .then(response => response.json())
         .then(data => {
-          data.forEach(sos => {
-            let marker = new google.maps.Marker({
-              position: { lat: parseFloat(sos.latitude), lng: parseFloat(sos.longitude) },
-              map: map,
-              title: sos.UserName + " - " + sos.distress_type,
-            });
-  
-            let infoWindow = new google.maps.InfoWindow({
-              content: `
-                <div style="color: black;">
-                  <h3>${sos.UserName}</h3>
-                  <p><strong>Disaster Type:</strong> ${sos.distress_type}</p>
-                  <p><strong>Time:</strong> ${sos.timestamp}</p>
-                  <p><strong>Message:</strong> ${sos.message || "No message provided"}</p>
-                </div>
-              `,
-            });
-  
-            marker.addListener("click", () => {
-              infoWindow.open(map, marker);
-            });
-          });
+          data.forEach(sos => addMarker(sos));
         });
+  
+      startRealTimeUpdates(); // Start listening for new SOS alerts
     }
+  
+    function addMarker(sos) {
+      let marker = new google.maps.Marker({
+        position: { lat: parseFloat(sos.latitude), lng: parseFloat(sos.longitude) },
+        map: map,
+        title: sos.UserName + " - " + sos.distress_type,
+      });
+  
+      let infoWindow = new google.maps.InfoWindow({
+        content: `
+          <div style="color: black;">
+            <h3>${sos.UserName}</h3>
+            <p><strong>Disaster Type:</strong> ${sos.distress_type}</p>
+            <p><strong>Time:</strong> ${sos.timestamp}</p>
+            <p><strong>Message:</strong> ${sos.message || "No message provided"}</p>
+          </div>
+        `,
+      });
+  
+      marker.addListener("click", () => {
+        infoWindow.open(map, marker);
+      });
+  
+      sosMarkers.push(marker);
+  
+      // Keep only the latest 10 markers to avoid clutter
+      if (sosMarkers.length > 10) {
+        let oldestMarker = sosMarkers.shift();
+        oldestMarker.setMap(null);
+      }
+    }
+  
+    async function startRealTimeUpdates() {
+      import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm').then(({ createClient }) => {
+        const supabase = createClient('https://ljncaafiuqjlrnruxirq.supabase.co', 'YOUR_SUPABASE_ANON_KEY');
+  
+        supabase.channel('sos-updates')
+          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'SOSAlerts' }, (payload) => {
+            console.log("New SOS Alert:", payload.new);
+            addMarker(payload.new);
+          })
+          .subscribe();
+      });
+    }
+  
+    window.initMap = initMap;
   </script>
+  
   
 
 
