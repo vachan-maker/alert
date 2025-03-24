@@ -119,7 +119,7 @@
     // Call start() to fetch the initial data and set up the subscription
   start();
 
-async function subscribeToSOSUpdates() {
+async function subscribeToSOSUpdates() { 
   const { data, error } = await supabase
     .channel('custom-insert-channel')
     .on(
@@ -129,14 +129,93 @@ async function subscribeToSOSUpdates() {
         if (payload.eventType === 'INSERT') {
           console.log("New SOS Alert received:", payload.new);
           
-          // Show an alert to notify about the new SOS
+          // Show an alert notification
           showAlert(`${payload.new.UserName} has sent an SOS`);
-          createCard(payload, isNewElement = true);
+
+          // Update the distress card list
+          createCard(payload.new, true);
+
+          // Increment SOS count
+          count++;
+          document.getElementById('sos-count').textContent = count;
+
+          // Ensure map is loaded before adding marker
+          if (window.map) {
+            let marker = new google.maps.Marker({
+              position: { 
+                lat: parseFloat(payload.new.latitude), 
+                lng: parseFloat(payload.new.longitude) 
+              },
+              map: window.map,
+              title: `${payload.new.UserName} - ${payload.new.distress_type}`,
+            });
+
+            let infoWindow = new google.maps.InfoWindow({
+              content: `
+                <div style="color: black;">
+                  <h3>${payload.new.UserName}</h3>
+                  <p><strong>Disaster Type:</strong> ${payload.new.distress_type}</p>
+                  <p><strong>Time:</strong> ${payload.new.timestamp}</p>
+                  <p><strong>Message:</strong> ${payload.new.message || "No message provided"}</p>
+                </div>
+              `,
+            });
+
+            marker.addListener("click", () => {
+              infoWindow.open(window.map, marker);
+            });
+          } else {
+            console.warn("Map not initialized yet!");
+          }
         }
       }
     )
     .subscribe();
+
+  if (error) {
+    console.error("Error subscribing to SOS updates:", error);
+  }
 }
+
+// Ensure this runs **only after** map is initialized
+window.initMap = function () {
+  window.map = new google.maps.Map(document.getElementById("map"), {
+    center: { lat: 9.41373, lng: 76.641 },
+    zoom: 5,
+    styles: [/* Map styles here */],
+  });
+
+  // Fetch existing markers from backend
+  fetch("/get_sos_locations")
+    .then(response => response.json())
+    .then(data => {
+      data.forEach(sos => {
+        let marker = new google.maps.Marker({
+          position: { lat: parseFloat(sos.latitude), lng: parseFloat(sos.longitude) },
+          map: window.map,
+          title: `${sos.UserName} - ${sos.distress_type}`,
+        });
+
+        let infoWindow = new google.maps.InfoWindow({
+          content: `
+            <div style="color: black;">
+              <h3>${sos.UserName}</h3>
+              <p><strong>Disaster Type:</strong> ${sos.distress_type}</p>
+              <p><strong>Time:</strong> ${sos.timestamp}</p>
+              <p><strong>Message:</strong> ${sos.message || "No message provided"}</p>
+            </div>
+          `,
+        });
+
+        marker.addListener("click", () => {
+          infoWindow.open(window.map, marker);
+        });
+      });
+    });
+
+  // Start real-time updates
+  subscribeToSOSUpdates();
+};
 
 
 
