@@ -102,3 +102,7 @@ def get_sos_locations():
         return jsonify(data)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route("/first-aid")
+def first_aid():
+    return render_template("first-aid.html")

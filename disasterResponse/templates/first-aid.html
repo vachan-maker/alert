@@ -1,0 +1,167 @@
+{% extends "layout.html" %}
+{% block body %}
+<script>
+  function getWeatherDescription(code) {
+    const weatherMap = {
+        0: { description: "Clear Sky", icon: "☀️" },
+        1: { description: "Mainly Clear", icon: "🌤️" },
+        2: { description: "Partly Cloudy", icon: "⛅" },
+        3: { description: "Overcast", icon: "☁️" },
+        45: { description: "Foggy", icon: "🌫️" },
+        48: { description: "Depositing Rime Fog", icon: "🌁" },
+        51: { description: "Light Drizzle", icon: "🌦️" },
+        53: { description: "Moderate Drizzle", icon: "🌧️" },
+        55: { description: "Heavy Drizzle", icon: "🌧️" },
+        61: { description: "Light Rain", icon: "🌧️" },
+        63: { description: "Moderate Rain", icon: "🌧️" },
+        65: { description: "Heavy Rain", icon: "🌧️" },
+        71: { description: "Light Snowfall", icon: "❄️" },
+        73: { description: "Moderate Snowfall", icon: "❄️" },
+        75: { description: "Heavy Snowfall", icon: "❄️" },
+        77: { description: "Snow Grains", icon: "🌨️" },
+        80: { description: "Light Showers", icon: "🌦️" },
+        81: { description: "Moderate Showers", icon: "🌧️" },
+        82: { description: "Heavy Showers", icon: "🌧️" },
+        85: { description: "Light Snow Showers", icon: "🌨️" },
+        86: { description: "Heavy Snow Showers", icon: "🌨️" },
+        95: { description: "Thunderstorm", icon: "⛈️" },
+        96: { description: "Thunderstorm with Light Hail", icon: "⛈️" },
+        99: { description: "Thunderstorm with Heavy Hail", icon: "⛈️" }
+    };
+    return weatherMap[code] || { description: "Unknown Weather", icon: "❓" };
+}
+  async function getWeather(latitude, longitude) {
+  fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weathercode,rain`)
+  .then(response => response.json())
+  .then(data => {
+      console.log("Weather Data:", data);
+      document.getElementById("current-temperature").textContent = data.current.temperature_2m + "°C" + getWeatherDescription(data.current.weathercode).icon;
+  })
+  .catch(error => console.error("Error:", error));
+}
+
+  function getUserLocation() {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        function (position) {
+          document.getElementById("latitude").value = position.coords.latitude;
+          document.getElementById("longitude").value = position.coords.longitude;
+          getWeather(position.coords.latitude, position.coords.longitude);
+        },
+        function (error) {
+          alert("Error getting location:", error);
+        }
+      );
+    } else {
+      console.error("Geolocation is not supported by this browser.");
+    }
+  }
+  window.onload = getUserLocation();
+const url = "https://api.open-meteo.com/v1/forecast";
+
+</script>
+<div class="px-30">
+  <div class="min-h-96 rounded-xl flex items-center justify-center bg-linear-to-r from-cyan-500 to-blue-500">
+    <h1 class="font-extrabold text-center text-7xl">ALERT</h1>
+
+  </div>
+</div>
+<div class="px-30 mt-7 w-full text-xl">
+
+    <h1 class="text-2xl font-bold text-center py-4">Comprehensive First Aid & Safety Guide for Natural Disasters and Calamities</h1>
+
+    <h2 class="text-xl font-semibold py-3">Preparation Before a Disaster</h2>
+    <ul class="py-2">
+        <li class="py-1"><strong>Emergency Kit</strong>: Pack 3 days’ worth of water (1 gallon/person/day), non-perishable food (canned goods, energy bars), flashlight with extra batteries, first aid kit (bandages, antiseptic, gauze, pain relievers), 7-day supply of medications, whistle, thermal blanket, multi-tool, dust masks, and plastic sheeting/duct tape for shelter.</li>
+        <li class="py-1"><strong>Plan</strong>: Map out two evacuation routes per household member, choose a safe meeting spot (e.g., a school or park), and share emergency contacts (local and out-of-state). Practice drills twice a year.</li>
+        <li class="py-1"><strong>Stay Informed</strong>: Use a NOAA weather radio, smartphone alerts, or local TV/radio for real-time updates. Know your area’s risks (e.g., flood zones, fault lines).</li>
+    </ul>
+
+    <h2 class="text-xl font-semibold py-3">First Aid Essentials</h2>
+    <ul class="py-2">
+        <li class="py-1"><strong>Severe Bleeding</strong></li>
+        <ul class="py-1 pl-6">
+            <li class="py-1">Apply firm, steady pressure with a clean cloth, towel, or bandage for 10-15 minutes.</li>
+            <li class="py-1">If possible, elevate the limb above heart level to slow blood flow.</li>
+            <li class="py-1">For unstoppable bleeding (e.g., arterial), use a tourniquet 2-3 inches above the wound (tighten until bleeding stops, note time applied, don’t remove until medical help arrives).</li>
+        </ul>
+        <li class="py-1"><strong>Breathing Problems</strong></li>
+        <ul class="py-1 pl-6">
+            <li class="py-1"><strong>CPR</strong>: If no pulse or breathing, push hard and fast on the chest (2 inches deep, 100-120 compressions/minute, to the beat of “Sweet Home Alabama”). After 30 compressions, tilt head back, lift chin, give 2 breaths (1 second each). Repeat until help arrives or they breathe.</li>
+            <li class="py-1"><strong>Choking</strong>: Stand behind, wrap arms around waist, make a fist above navel, thrust inward and upward 5 times. Alternate with 5 firm back blows between shoulder blades.</li>
+        </ul>
+        <li class="py-1"><strong>Fractures</strong></li>
+        <ul class="py-1 pl-6">
+            <li class="py-1">Don’t move the person unless they’re in danger (e.g., falling debris). Splint the injury with rigid material (stick, board) and padding (cloth, shirt); secure with tape or strips of fabric.</li>
+            <li class="py-1">Check for circulation below the injury (pulse, warmth); if absent, loosen slightly.</li>
+            <li class="py-1">Apply a cold pack (wrapped in cloth) to reduce swelling, 10 minutes on/off.</li>
+        </ul>
+        <li class="py-1"><strong>Burns</strong></li>
+        <ul class="py-1 pl-6">
+            <li class="py-1"><strong>Minor</strong>: Run cool (not cold) water over it for 10-15 minutes, cover with sterile gauze or clean cloth. No butter or ointments.</li>
+            <li class="py-1"><strong>Severe</strong>: Don’t remove stuck clothing; cover loosely and seek help fast.</li>
+            <li class="py-1">Watch for shock (pale, clammy skin, rapid breathing).</li>
+        </ul>
+        <li class="py-1"><strong>Shock</strong></li>
+        <ul class="py-1 pl-6">
+            <li class="py-1">Lay them flat on their back, elevate legs 6-12 inches unless spine injury is suspected (keep them still then).</li>
+            <li class="py-1">Cover with a blanket to maintain body heat; don’t give food or drink if they’re unconscious or vomiting.</li>
+            <li class="py-1">Monitor breathing and pulse; reassure them calmly.</li>
+        </ul>
+    </ul>
+
+    <h2 class="text-xl font-semibold py-3">Safety During Specific Disasters</h2>
+    <ul class="py-2">
+        <li class="py-1"><strong>Earthquake</strong></li>
+        <ul class="py-1 pl-6">
+            <li class="py-1"><strong>During</strong>: Drop to hands and knees, cover head/neck under a table or against an interior wall, hold on until shaking stops (30-60 seconds typically).</li>
+            <li class="py-1">Avoid elevators, glass, and exterior walls. If outside, move to an open area away from buildings, trees, and power lines.</li>
+            <li class="py-1"><strong>After</strong>: Expect aftershocks; check for gas leaks (smell or hissing), turn off main if safe. Wear shoes to avoid debris.</li>
+        </ul>
+        <li class="py-1"><strong>Flood</strong></li>
+        <ul class="py-1 pl-6">
+            <li class="py-1">Evacuate to high ground if warned; don’t delay. Only 12 inches of moving water can sweep away a car.</li>
+            <li class="py-1">If trapped, climb to a roof or tree, signal with a whistle, flashlight, or bright cloth.</li>
+            <li class="py-1">Post-flood: Don’t touch wet electrical devices, avoid water with debris or odd smells (contamination risk).</li>
+        </ul>
+        <li class="py-1"><strong>Tornado</strong></li>
+        <ul class="py-1 pl-6">
+            <li class="py-1">Go to a basement, storm shelter, or small interior room (bathroom, closet) on the lowest floor. Put as many walls between you and outside as possible.</li>
+            <li class="py-1">Use a mattress, pillows, or helmet to shield your head. If in a car, abandon it for a ditch—lie flat, cover head.</li>
+            <li class="py-1">After: Watch for downed power lines, unstable structures.</li>
+        </ul>
+        <li class="py-1"><strong>Hurricane</strong></li>
+        <ul class="py-1 pl-6">
+            <li class="py-1">Board windows, secure outdoor items, and stay in an interior room away from glass during the storm.</li>
+            <li class="py-1">If flooding begins, move to higher floors but avoid attics unless you have an escape hatch or axe to break through.</li>
+            <li class="py-1">Post-storm: Don’t walk through floodwater (risk of bacteria, snakes, or hidden hazards); check home for structural damage before re-entering.</li>
+        </ul>
+        <li class="py-1"><strong>Wildfire</strong></li>
+        <ul class="py-1 pl-6">
+            <li class="py-1">Leave early if evacuation is advised—roads clog fast. Wear long sleeves, pants, and a mask to limit smoke inhalation.</li>
+            <li class="py-1">If trapped: Find a pond, river, or open field; lie face-down, cover body with wet cloth or soil. Avoid canyons or ridges where fire spreads fastest.</li>
+            <li class="py-1">Post-fire: Check for embers in roofs/gutters; avoid ash piles (toxic chemicals).</li>
+        </ul>
+    </ul>
+
+    <h2 class="text-xl font-semibold py-3">Post-Disaster Survival</h2>
+    <ul class="py-2">
+        <li class="py-1"><strong>Water</strong>: If tap water is unsafe, boil it for 1 minute (rolling boil) or add 8 drops of unscented bleach per gallon, wait 30 minutes. Filter murky water through cloth first.</li>
+        <li class="py-1"><strong>Food</strong>: Use refrigerated food within 4 hours without power; cook perishables first. Discard cans dented or touched by floodwater.</li>
+        <li class="py-1"><strong>Shelter</strong>: Avoid buildings with cracked walls or shifted foundations. Use tarps, tents, or car interiors if needed; insulate with blankets or dry leaves.</li>
+        <li class="py-1"><strong>Hygiene</strong>: Wash hands with soap or sanitizer after touching debris. Treat cuts immediately to prevent infection.</li>
+        <li class="py-1"><strong>Rescue Signals</strong>: Use 3 loud whistle blasts, a mirror to reflect sunlight, or an “X” marked with rocks/cloth visible from air.</li>
+    </ul>
+
+    <h2 class="text-xl font-semibold py-3">Critical Tips</h2>
+    <ul class="py-2">
+        <li class="py-1"><strong>Stay Calm</strong>: Take 5 deep breaths to focus—panic leads to mistakes.</li>
+        <li class="py-1"><strong>Prioritize</strong>: Protect yourself first, then assist others if safe. Don’t risk your life unnecessarily.</li>
+        <li class="py-1"><strong>Assess</strong>: Look for hazards (fire, gas, water) before acting in any situation.</li>
+        <li class="py-1"><strong>Conserve</strong>: Sip water, rest when possible, and avoid overexertion if injured or trapped.</li>
+    </ul>
+
+    <p class="py-4 italic text-center">This guide covers the essentials—memorize key steps, keep supplies ready, and adapt to your surroundings. Stay safe!</p>
+</div>
+
+{% endblock %}
