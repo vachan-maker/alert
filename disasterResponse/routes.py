@@ -3,6 +3,7 @@ from flask import render_template, request, jsonify, session, redirect,url_for,f
 from dotenv import load_dotenv
 from functools import wraps
 import os
+# import openmeteo_requests
 
 import requests
 from disasterResponse import supabase

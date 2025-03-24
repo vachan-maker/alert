@@ -18,6 +18,24 @@
     }
   }
   window.onload = getUserLocation();
+  const params = {
+	"latitude": 9.2667,
+	"longitude": 76.7833,
+	"hourly": "temperature_2m",
+	"current": ["temperature_2m", "precipitation", "weather_code", "is_day"]
+};
+const url = "https://api.open-meteo.com/v1/forecast";
+async function getWeather() {
+  const responses = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(params),
+  }).then((response) => response.json());
+  console.log(responses);
+}
+getWeather();
 </script>
 <div class="px-7">
   <div class="min-h-96 rounded-xl flex items-center justify-center bg-linear-to-r from-cyan-500 to-blue-500">
