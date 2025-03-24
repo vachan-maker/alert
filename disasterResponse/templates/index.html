@@ -1,13 +1,52 @@
 {% extends "layout.html" %}
 {% block body %}
 <script>
-  
+  function getWeatherDescription(code) {
+    const weatherMap = {
+        0: { description: "Clear Sky", icon: "☀️" },
+        1: { description: "Mainly Clear", icon: "🌤️" },
+        2: { description: "Partly Cloudy", icon: "⛅" },
+        3: { description: "Overcast", icon: "☁️" },
+        45: { description: "Foggy", icon: "🌫️" },
+        48: { description: "Depositing Rime Fog", icon: "🌁" },
+        51: { description: "Light Drizzle", icon: "🌦️" },
+        53: { description: "Moderate Drizzle", icon: "🌧️" },
+        55: { description: "Heavy Drizzle", icon: "🌧️" },
+        61: { description: "Light Rain", icon: "🌧️" },
+        63: { description: "Moderate Rain", icon: "🌧️" },
+        65: { description: "Heavy Rain", icon: "🌧️" },
+        71: { description: "Light Snowfall", icon: "❄️" },
+        73: { description: "Moderate Snowfall", icon: "❄️" },
+        75: { description: "Heavy Snowfall", icon: "❄️" },
+        77: { description: "Snow Grains", icon: "🌨️" },
+        80: { description: "Light Showers", icon: "🌦️" },
+        81: { description: "Moderate Showers", icon: "🌧️" },
+        82: { description: "Heavy Showers", icon: "🌧️" },
+        85: { description: "Light Snow Showers", icon: "🌨️" },
+        86: { description: "Heavy Snow Showers", icon: "🌨️" },
+        95: { description: "Thunderstorm", icon: "⛈️" },
+        96: { description: "Thunderstorm with Light Hail", icon: "⛈️" },
+        99: { description: "Thunderstorm with Heavy Hail", icon: "⛈️" }
+    };
+    return weatherMap[code] || { description: "Unknown Weather", icon: "❓" };
+}
+  async function getWeather(latitude, longitude) {
+  fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weathercode`)
+  .then(response => response.json())
+  .then(data => {
+      console.log("Weather Data:", data);
+      document.getElementById("current-temperature").textContent = data.current.temperature_2m + "°C" + getWeatherDescription(data.current.weathercode).icon;
+  })
+  .catch(error => console.error("Error:", error));
+}
+
   function getUserLocation() {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         function (position) {
           document.getElementById("latitude").value = position.coords.latitude;
           document.getElementById("longitude").value = position.coords.longitude;
+          getWeather(position.coords.latitude, position.coords.longitude);
         },
         function (error) {
           alert("Error getting location:", error);
@@ -18,24 +57,8 @@
     }
   }
   window.onload = getUserLocation();
-  const params = {
-	"latitude": 9.2667,
-	"longitude": 76.7833,
-	"hourly": "temperature_2m",
-	"current": ["temperature_2m", "precipitation", "weather_code", "is_day"]
-};
 const url = "https://api.open-meteo.com/v1/forecast";
-async function getWeather() {
-  const responses = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(params),
-  }).then((response) => response.json());
-  console.log(responses);
-}
-getWeather();
+
 </script>
 <div class="px-7">
   <div class="min-h-96 rounded-xl flex items-center justify-center bg-linear-to-r from-cyan-500 to-blue-500">
@@ -44,6 +67,36 @@ getWeather();
   </div>
 </div>
 <div class="px-7 mt-5">
+  <div class="stats shadow">
+    <div class="stat">
+      <div class="stat-figure text-primary">
+      </div>
+      <div class="stat-title">Current Temperature</div>
+      <div class="stat-value text-primary" id="current-temperature"></div>
+      <div class="stat-desc">21% more than last month</div>
+    </div>
+  
+    <div class="stat">
+      <div class="stat-figure text-secondary">
+      </div>
+      <div class="stat-title">Page Views</div>
+      <div class="stat-value text-secondary">2.6M</div>
+      <div class="stat-desc">21% more than last month</div>
+    </div>
+  
+    <div class="stat">
+      <div class="stat-figure text-secondary">
+        <div class="avatar online">
+          <div class="w-16 rounded-full">
+            <img src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" />
+          </div>
+        </div>
+      </div>
+      <div class="stat-value">86%</div>
+      <div class="stat-title">Tasks done</div>
+      <div class="stat-desc text-secondary">31 tasks remaining</div>
+    </div>
+  </div>
 <div class="card bg-gradient-to-r from-red-400 to-red-500 text-primary-content w-96">
   <div class="card-body">
     <h2 class="card-title text-error-content">Send Distress Signal!</h2>
