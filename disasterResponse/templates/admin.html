@@ -53,13 +53,21 @@
 
 function createCard(message2, isNewElement = false) {
   const card = document.createElement("div");
-  card.classList.add("card", "w-96", "bg-base-200", "card-sm", "shadow-lg", "rounded-box", "my-4");
+  card.classList.add(
+    "card",
+    "w-96",
+    "bg-base-200",
+    "card-sm",
+    "shadow-lg",
+    "rounded-box",
+    "my-4"
+  );
   card.innerHTML = `
     <div class="card-body">
       <h2 class="card-title">${message2.UserName}</h2>
       <p class="text-base">Distress Type: <span class="font-bold">${message2.distress_type}</span></p>
-    </div>
-  `;
+    </div>`;
+
   if (isNewElement) {
     card.classList.add("animate-bounce", "border-indigo-500/100");
     setTimeout(() => card.classList.remove("animate-bounce", "border-indigo-500/100"), 5000);
@@ -72,15 +80,15 @@ var popup = L.popup();
 
 async function start() {
   let { data, count: rowCount, error } = await supabase
-    .from('SOSAlerts')
-    .select('*', { count: 'exact' });
+    .from("SOSAlerts")
+    .select("*", { count: "exact" });
 
   if (error) {
     console.error("Error fetching row count:", error);
   } else {
     console.log(data);
     count = rowCount;
-    document.getElementById('sos-count').textContent = count;
+    document.getElementById("sos-count").textContent = count;
     data.forEach((element) => {
       createCard(element, false);
     });
@@ -92,28 +100,29 @@ start();
 
 async function subscribeToSOSUpdates() {
   const { data, error } = await supabase
-    .channel('custom-insert-channel')
+    .channel("custom-insert-channel")
     .on(
-      'postgres_changes',
-      { event: 'INSERT', schema: 'public', table: 'SOSAlerts' },
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "SOSAlerts" },
       (payload) => {
-        if (payload.eventType === 'INSERT') {
+        if (payload.eventType === "INSERT") {
           console.log("New SOS Alert received:", payload.new);
-          
-          // Show an alert to notify about the new SOS
+
+          // Show an alert notification
           showAlert(`${payload.new.UserName} has sent an SOS`);
-          
-          // Create the distress signal box (card) in real-time
+
+          // Create distress signal box dynamically
           createCard(payload.new, true);
 
-          // Create a marker dynamically on the map
+          // Add animated marker to the map
           let marker = new google.maps.Marker({
-            position: { 
-              lat: parseFloat(payload.new.latitude), 
-              lng: parseFloat(payload.new.longitude) 
+            position: {
+              lat: parseFloat(payload.new.latitude),
+              lng: parseFloat(payload.new.longitude),
             },
             map: map,
             title: `${payload.new.UserName} - ${payload.new.distress_type}`,
+            animation: google.maps.Animation.DROP, // Drop animation
           });
 
           // Attach an info window with details
@@ -134,7 +143,7 @@ async function subscribeToSOSUpdates() {
 
           // Increment count on new insert
           count++;
-          document.getElementById('sos-count').textContent = count;
+          document.getElementById("sos-count").textContent = count;
         }
       }
     )
@@ -145,8 +154,9 @@ async function subscribeToSOSUpdates() {
   }
 }
 
-// Call the function to start real-time updates
+// Start real-time updates
 subscribeToSOSUpdates();
+
 
 
 
