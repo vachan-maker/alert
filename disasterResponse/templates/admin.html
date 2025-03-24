@@ -79,7 +79,7 @@
 
     fetchSOSData();
 
-  async function subscribeToSOSUpdates() {
+    async function subscribeToSOSUpdates() {
   const { data, error } = await supabase
     .channel('custom-insert-channel')
     .on(
@@ -92,23 +92,22 @@
           showAlert(`${payload.new.UserName} has sent an SOS`);
           createCard(payload.new, true);
 
-          // Ensure map is initialized before adding markers
           if (typeof map === 'undefined') {
             console.error("Map is not initialized yet!");
             return;
           }
 
-          // Create a marker dynamically on the map
+          // Create a marker with DROP animation
           let marker = new google.maps.Marker({
             position: { 
               lat: parseFloat(payload.new.latitude), 
               lng: parseFloat(payload.new.longitude) 
             },
-            map: map,  // Use the global 'map' variable
+            map: map,
             title: `${payload.new.UserName} - ${payload.new.distress_type}`,
+            animation: google.maps.Animation.DROP, // Drop animation added here
           });
 
-          // Create an info window for the marker
           let infoWindow = new google.maps.InfoWindow({
             content: `
               <div style="color: black;">
@@ -120,12 +119,10 @@
             `,
           });
 
-          // Attach click event to show the info window
           marker.addListener("click", () => {
             infoWindow.open(map, marker);
           });
 
-          // Increment count on new insert
           count++;
           document.getElementById('sos-count').textContent = count;
         }
@@ -137,6 +134,7 @@
     console.error("Error subscribing to SOS updates:", error);
   }
 }
+
 
 
     subscribeToSOSUpdates();
