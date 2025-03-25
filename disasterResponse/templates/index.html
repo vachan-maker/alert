@@ -39,7 +39,13 @@
   })
   .catch(error => console.error("Error:", error));
 }
-
+async function getPlace(latitude, longitude) {
+  fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`)
+  .then(response=>response.json())
+  .then(data=>{console.log(data);
+    document.getElementById("current-location").textContent = data.name;
+  })
+}
   function getUserLocation() {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -47,6 +53,7 @@
           document.getElementById("latitude").value = position.coords.latitude;
           document.getElementById("longitude").value = position.coords.longitude;
           getWeather(position.coords.latitude, position.coords.longitude);
+          getPlace(position.coords.latitude, position.coords.longitude);
         },
         function (error) {
           alert("Error getting location:", error);
@@ -125,9 +132,9 @@ const url = "https://api.open-meteo.com/v1/forecast";
           </div>
         </div>
       </div>
-      <div class="stat-value">Your Name</div>
+      <div class="stat-value">{{name}}</div>
       <div class="stat-title">-----</div>
-      <div class="stat-desc text-secondary">Current Location</div>
+      <div class="stat-desc text-secondary" id="current-location"></div>
     </div>
   </div>
   <div class="flex flex-row gap-10">
@@ -148,8 +155,8 @@ const url = "https://api.open-meteo.com/v1/forecast";
               </select>
               <input type="button" class="btn btn-warning btn-md w-full" onclick="getUserLocation()"
                 value="Tap to send location!" />
-                <label for="person">Name</label>
-              <input type="text" name="name" class="input input-bordered input-primary w-full max-w my-4" id="person" required>
+                <label for="phone">Your Phone Number</label>
+              <input type="number" name="phone" class="input input-bordered input-primary w-full max-w my-4" id="phone" required>
               <input type="hidden" name="longitude" id="longitude">
               <input type="hidden" name="latitude" id="latitude">
               <div id="map"></div>

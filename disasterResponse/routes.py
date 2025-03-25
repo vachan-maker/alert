@@ -21,8 +21,11 @@ def login():
         password = request.form.get("password")
         if email and password:
             response = supabase.auth.sign_in_with_password({"email": email, "password": password})
+            # print(response)
             if response and response.session.access_token:
                 session["user"] = response.session.access_token
+                session["user_id"] = response.user.id
+                print(session["user_id"])
                 return redirect(url_for("dashboard"))
             else:
                 return jsonify({"error": "Invalid credentials"}), 401
@@ -54,7 +57,14 @@ def login_required(f):
 @app.route("/")
 @login_required
 def dashboard():
-    return render_template("index.html")
+    try:
+        response = supabase.table("profiles").select("name").eq("id", session["user_id"]).execute()
+        global username 
+        username = response.data[0]["name"]
+        print(response)
+    except Exception as e:
+        print(e)
+    return render_template("index.html",name=username)
 
 @app.route("/sos",methods=["POST"]) 
 def sos():
@@ -62,10 +72,11 @@ def sos():
         longitude = request.form.get("longitude")
         latitude = request.form.get("latitude")
         selected_emergency = request.form.get("emergency")
+        phone = request.form.get("phone")
         name = request.form.get("name")
         response = (
         supabase.table("SOSAlerts")
-        .insert({"user_identification": 8921385972, "message": "Pluto", "longitude": longitude, "latitude": latitude, "UserName": name,"distress_type": selected_emergency})  
+        .insert({"user_identification": 8921385972, "message": "Pluto", "longitude": longitude, "latitude": latitude, "UserName": username,"distress_type": selected_emergency,"phone-number":phone})  
         .execute())
         flash("SOS Alert sent! Help is on the way!", "success")
         return redirect(url_for("dashboard"))
