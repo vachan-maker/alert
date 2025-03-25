@@ -138,7 +138,7 @@
 
           // Center map on the marker and zoom in smoothly
           map.setCenter(marker.getPosition());
-          smoothZoom(15, 1000); // Smoothly zooms to level 15 in 1 second
+          smoothZoom(15, 1500); // Smoothly zooms to level 15 in 1 second
 
           // Automatically fade out and close the InfoWindow after 5 seconds
           setTimeout(() => {
@@ -149,7 +149,7 @@
 
           // Restore zoom level smoothly after 7 seconds
           setTimeout(() => {
-            smoothZoom(3, 1000); // Smoothly zooms out to level 12 in 1 second
+            smoothZoom(1, 1000); // Smoothly zooms out to level 12 in 1 second
           }, 7000);
 
           marker.addListener("click", () => {
