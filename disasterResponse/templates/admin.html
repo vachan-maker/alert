@@ -159,12 +159,12 @@ const istDate = utcDate.toLocaleString("en-IN", {
             let infoDiv = document.getElementById(`info-${payload.new.id}`);
             
             setTimeout(() => infoWindow.close(), 1000);
-          }, 5000);
+          }, 7000);
 
           // Restore zoom level smoothly after 7 seconds
           setTimeout(() => {
             map.setZoom(5); // Smoothly zooms out to level 12 in 1 second
-          }, 5000);
+          }, 7000);
 
           marker.addListener("click", () => {
             infoWindow.open(map, marker);
