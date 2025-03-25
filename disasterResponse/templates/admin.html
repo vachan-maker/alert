@@ -152,7 +152,7 @@ const istDate = utcDate.toLocaleString("en-IN", {
 
           // Center map on the marker and zoom in smoothly
           map.setCenter(marker.getPosition());
-          smoothZoom(15, 1500); // Smoothly zooms to level 15 in 1 second
+          smoothZoom(30, 1500); // Smoothly zooms to level 15 in 1 second
 
           // Automatically fade out and close the InfoWindow after 5 seconds
           setTimeout(() => {
@@ -163,7 +163,7 @@ const istDate = utcDate.toLocaleString("en-IN", {
 
           // Restore zoom level smoothly after 7 seconds
           setTimeout(() => {
-            smoothZoom(3, 1000); // Smoothly zooms out to level 12 in 1 second
+            smoothZoom(5, 1000); // Smoothly zooms out to level 12 in 1 second
           }, 5000);
 
           marker.addListener("click", () => {
