@@ -76,7 +76,7 @@ def sos():
         name = request.form.get("name")
         response = (
         supabase.table("SOSAlerts")
-        .insert({"user_identification": 8921385972, "message": "Pluto", "longitude": longitude, "latitude": latitude, "UserName": username,"distress_type": selected_emergency,"phone-number":phone})  
+        .insert({"user_identification": 8921385972, "message": phone, "longitude": longitude, "latitude": latitude, "UserName": username,"distress_type": selected_emergency})  
         .execute())
         flash("SOS Alert sent! Help is on the way!", "success")
         return redirect(url_for("dashboard"))
