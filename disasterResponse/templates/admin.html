@@ -125,14 +125,22 @@
             `,
           });
 
-          // Open InfoWindow when a new SOS is added
+          // Open InfoWindow and focus the map on the new alert
           infoWindow.open(map, marker);
+          map.setCenter(marker.getPosition()); // Center on new marker
+          map.setZoom(15); // Zoom in to focus on the alert
 
           // Automatically fade out and close the InfoWindow after 5 seconds
           setTimeout(() => {
             let infoDiv = document.getElementById(`info-${payload.new.id}`);
+            if (infoDiv) infoDiv.style.opacity = 0;
             setTimeout(() => infoWindow.close(), 1000); // Close after fade-out
           }, 5000);
+
+          // Restore zoom level after 7 seconds
+          setTimeout(() => {
+            map.setZoom(12); // Adjust this zoom level as per your preference
+          }, 7000);
 
           marker.addListener("click", () => {
             infoWindow.open(map, marker);
@@ -149,6 +157,7 @@
     console.error("Error subscribing to SOS updates:", error);
   }
 }
+
 
 
 
