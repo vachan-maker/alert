@@ -163,8 +163,8 @@ const istDate = utcDate.toLocaleString("en-IN", {
 
           // Restore zoom level smoothly after 7 seconds
           setTimeout(() => {
-            smoothZoom(2, 1000); // Smoothly zooms out to level 12 in 1 second
-          }, 7000);
+            smoothZoom(3, 1000); // Smoothly zooms out to level 12 in 1 second
+          }, 5000);
 
           marker.addListener("click", () => {
             infoWindow.open(map, marker);
