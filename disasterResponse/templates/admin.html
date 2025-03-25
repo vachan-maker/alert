@@ -91,11 +91,20 @@
 
           showAlert(`${payload.new.UserName} has sent an SOS`);
           createCard(payload.new, true);
-          const utcDate = new Date(payload.created_at); // UTC time
+          const utcDate = new Date(payload.new.created_at); // Convert UTC to Date object
 
-// Convert to IST (GMT+5:30)
-          const istOffset = 5.5 * 60 * 60 * 1000; // 5 hours 30 minutes in milliseconds
-          const istDate = new Date(utcDate.getTime() + istOffset);
+// Convert to IST
+const istDate = utcDate.toLocaleString("en-IN", { 
+  timeZone: "Asia/Kolkata", 
+  year: "numeric", 
+  month: "long", 
+  day: "numeric", 
+  hour: "2-digit", 
+  minute: "2-digit", 
+  second: "2-digit", 
+  hour12: true 
+});
+
 
           if (typeof map === 'undefined') {
             console.error("Map is not initialized yet!");
@@ -118,7 +127,7 @@
               <div id="info-${payload.new.id}" style="color: black; transition: opacity 1s;">
                 <h3>${payload.new.UserName}</h3>
                 <p><strong>Disaster Type:</strong> ${payload.new.distress_type}</p>
-                
+                <p><strong>Time:</strong> ${istDate}</p>
                 <p><strong>Time:</strong> ${payload.new.created_at}</p>
                 <p><strong>Message:</strong> ${payload.new.message || "No message provided"}</p>
               </div>
@@ -217,11 +226,23 @@ return isDate;
             title: `${sos.UserName} - ${sos.distress_type}`,
           });
 
+          const utcDate = new Date(sos.created_at);
+          const istDate = utcDate.toLocaleString("en-IN", { 
+  timeZone: "Asia/Kolkata", 
+  year: "numeric", 
+  month: "long", 
+  day: "numeric", 
+  hour: "2-digit", 
+  minute: "2-digit", 
+  second: "2-digit", 
+  hour12: true 
+});
+
           let infoWindow = new google.maps.InfoWindow({
             content: `<div style="color: black;">
                         <h3>${sos.UserName}</h3>
                         <p><strong>Disaster Type:</strong> ${sos.distress_type}</p>
-                        <p><strong>Time:</strong>${sos.created_at}</p>
+                         <p><strong>Time:</strong> ${istDate}</p>
                         <p><strong>Message:</strong> ${sos.message || "No message provided"}</p>
                       </div>`,
           });
