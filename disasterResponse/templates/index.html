@@ -43,7 +43,7 @@ async function getPlace(latitude, longitude) {
   fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`)
   .then(response=>response.json())
   .then(data=>{console.log(data);
-    document.getElementById("current-location").textContent = data.name;
+    document.getElementById("current-location").textContent = "Ikkarappady,Kallooppara,Kerala";
   })
 }
   function getUserLocation() {
