@@ -119,21 +119,37 @@
             `,
           });
 
-          // Open InfoWindow and focus the map on the new alert
+          // Open InfoWindow when a new SOS is added
           infoWindow.open(map, marker);
-          map.setCenter(marker.getPosition()); // Center on new marker
-          map.setZoom(15); // Zoom in to focus on the alert
+
+          // Smooth Zoom-In Animation
+          function smoothZoom(targetZoom, duration) {
+            let currentZoom = map.getZoom();
+            let zoomStep = (targetZoom - currentZoom) / (duration / 100);
+            let zoomInterval = setInterval(() => {
+              if (currentZoom < targetZoom) {
+                currentZoom += zoomStep;
+                map.setZoom(Math.round(currentZoom)); // Rounding to avoid decimals
+              } else {
+                clearInterval(zoomInterval);
+              }
+            }, 100);
+          }
+
+          // Center map on the marker and zoom in smoothly
+          map.setCenter(marker.getPosition());
+          smoothZoom(15, 1000); // Smoothly zooms to level 15 in 1 second
 
           // Automatically fade out and close the InfoWindow after 5 seconds
           setTimeout(() => {
             let infoDiv = document.getElementById(`info-${payload.new.id}`);
-            if (infoDiv) infoDiv.style.opacity = 0;
-            setTimeout(() => infoWindow.close(), 1000); // Close after fade-out
+            
+            setTimeout(() => infoWindow.close(), 1000);
           }, 5000);
 
-          // Restore zoom level after 7 seconds
+          // Restore zoom level smoothly after 7 seconds
           setTimeout(() => {
-            map.setZoom(5); // Adjust this zoom level as per your preference
+            smoothZoom(3, 1000); // Smoothly zooms out to level 12 in 1 second
           }, 7000);
 
           marker.addListener("click", () => {
