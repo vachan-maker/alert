@@ -128,7 +128,6 @@ const istDate = utcDate.toLocaleString("en-IN", {
                 <h3>${payload.new.UserName}</h3>
                 <p><strong>Disaster Type:</strong> ${payload.new.distress_type}</p>
                 <p><strong>Time:</strong> ${istDate}</p>
-                <p><strong>Time:</strong> ${payload.new.created_at}</p>
                 <p><strong>Message:</strong> ${payload.new.message || "No message provided"}</p>
               </div>
             `,
