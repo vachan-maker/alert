@@ -5,6 +5,7 @@ from flask_cors import CORS
 from pywebpush import webpush, WebPushException
 from functools import wraps
 import os
+from config import SUPABASE_URL, SUPABASE_KEY, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY
 # import openmeteo_requests
 
 import requests
@@ -13,6 +14,7 @@ from disasterResponse import app
 load_dotenv()
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+
 AUTH_URL = f"{SUPABASE_URL}/auth/v1"
 
 
@@ -133,3 +135,8 @@ def update_location():
         return jsonify({"message": "Location updated successfully"})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+@app.route("/vapidPublicKey")
+def get_vapid_public_key():
+    """Frontend fetches the VAPID public key from here"""
+    return jsonify({"publicKey": VAPID_PUBLIC_KEY})
