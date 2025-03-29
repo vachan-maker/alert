@@ -11,6 +11,23 @@ async function registerServiceWorker() {
         console.error("Service Worker registration failed:", error);
     }
 }
+async function requestNotificationPermission() {
+    if (!("Notification" in window)) {
+        console.error("This browser does not support notifications.");
+        return;
+    }
+
+    const permission = await Notification.requestPermission();
+    
+    if (permission === "granted") {
+        console.log("Notification permission granted.");
+        await subscribeUser();
+    } else if (permission === "denied") {
+        console.warn("User denied notifications.");
+    } else {
+        console.log("User dismissed notification prompt.");
+    }
+}
 
 async function subscribeUser() {
     const registration = await navigator.serviceWorker.ready;
