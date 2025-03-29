@@ -141,3 +141,9 @@ def update_location():
 def get_vapid_public_key():
     """Frontend fetches the VAPID public key from here"""
     return jsonify({"publicKey": VAPID_PUBLIC_KEY})
+
+@app.route("/subscribe", methods=["POST"])
+def subscribe():
+    subscription_data = request.json  # Get the subscription JSON
+    print(subscription_data)
+    return jsonify({"message": "Subscription stored!"}), 201
