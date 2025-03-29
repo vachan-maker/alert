@@ -39,6 +39,27 @@
   })
   .catch(error => console.error("Error:", error));
 }
+async function updateLocation(latitude, longitude) {
+    try {
+        const response = await fetch('/update_location', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ latitude, longitude })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log(longitude,latitude);
+        console.log("Location updated:", data);
+    } catch (error) {
+        console.error("Error updating location:", error);
+    }
+}
 async function getPlace(latitude, longitude) {
   fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`)
   .then(response=>response.json())
@@ -54,6 +75,7 @@ async function getPlace(latitude, longitude) {
           document.getElementById("longitude").value = position.coords.longitude;
           getWeather(position.coords.latitude, position.coords.longitude);
           getPlace(position.coords.latitude, position.coords.longitude);
+          updateLocation(position.coords.latitude, position.coords.longitude);
         },
         function (error) {
           alert("Error getting location:", error);

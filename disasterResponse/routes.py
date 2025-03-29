@@ -1,6 +1,8 @@
 from urllib import response
 from flask import render_template, request, jsonify, session, redirect,url_for,flash
 from dotenv import load_dotenv
+from flask_cors import CORS
+from pywebpush import webpush, WebPushException
 from functools import wraps
 import os
 # import openmeteo_requests
@@ -118,3 +120,16 @@ def get_sos_locations():
 @app.route("/first-aid")
 def first_aid():
     return render_template("first-aid.html")
+
+@app.route("/update_location", methods=["POST"])
+def update_location():
+    try:
+        data = request.get_json()
+        longitude = data.get("longitude")
+        latitude = data.get("latitude")
+        print(longitude,latitude)
+        response = supabase.table("profiles").update({"Longitude": longitude, "Latitude": latitude}).eq("id", session["user_id"]).execute()
+        print(response)
+        return jsonify({"message": "Location updated successfully"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
