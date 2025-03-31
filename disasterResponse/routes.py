@@ -122,12 +122,13 @@ def sos():
         flash("SOS Alert sent! Help is on the way!", "success")
 
         # Fetch all users' subscriptions and locations
-        users = supabase.table("profiles").select("id, latitude, longitude, sub").execute()
+        users = supabase.table("profiles").select("id, Latitude, Longitude, sub").execute()
+        print(users)
         push_tokens = []
 
         # Find users within 10km radius
         for user in users.data:
-            if user["latitude"] and user["longitude"] and is_within_radius(latitude, longitude, user["latitude"], user["longitude"]):
+            if user["Latitude"] and user["Longitude"] and is_within_radius(latitude, longitude, user["Latitude"], user["Longitude"]):
                 if user.get("sub"):  # Check if user has a push subscription
                     push_tokens.append(user["sub"])
                     print(user["sub"])
@@ -155,12 +156,6 @@ def phone():
 def admin():
     return render_template("admin.html")
 
-@app.route("/webhook",methods=["POST", "GET"])
-def webhook():
-    if request.method == "GET":
-        data = request.json
-        print(data)
-        return jsonify(data)
     
 @app.route("/get_sos_locations", methods=["GET"])
 def get_sos_locations():
@@ -183,7 +178,6 @@ def update_location():
         latitude = data.get("latitude")
         print(longitude,latitude)
         response = supabase.table("profiles").update({"Longitude": longitude, "Latitude": latitude}).eq("id", session["user_id"]).execute()
-        print(response)
         return jsonify({"message": "Location updated successfully"})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -197,7 +191,6 @@ def get_vapid_public_key():
 def subscribe():
     subscription_data = request.get_json()
     response = supabase.table("profiles").update({"sub":subscription_data}).eq("id", session["user_id"]).execute()
-    print(response)
     return jsonify({"message": "Subscription stored!"}), 201
 
 # Route to serve service-worker.js
