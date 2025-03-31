@@ -187,15 +187,6 @@ def get_sos_locations():
         return jsonify(data)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-@app.route("/alert_users")
-def alert_users():
-    response = supabase.table("SOSAlerts").select("*").execute()
-    users = supabase.table("profiles").select("id, Latitude, Longitude, sub").execute()
-    print("UUUUUUUUUUUUUUUUUSEEEEEEEER")
-    # print(users)
-
-        # Send push notifications to nearby users
-    return redirect(url_for("dashboard"))
 
 
 
