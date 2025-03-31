@@ -5,6 +5,8 @@ from flask_cors import CORS
 from pywebpush import webpush, WebPushException
 from functools import wraps
 import os
+
+from urllib.parse import urlparse
 # import openmeteo_requests
 
 import requests
@@ -13,6 +15,7 @@ from disasterResponse import app
 load_dotenv()
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+
 AUTH_URL = f"{SUPABASE_URL}/auth/v1"
 
 
@@ -133,3 +136,45 @@ def update_location():
         return jsonify({"message": "Location updated successfully"})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+# Route to get the VAPID public key
+@app.route('/vapid_public_key')
+def vapid_public_key():
+    return jsonify({'public_key': os.getenv('VAPID_PUBLIC_KEY')})
+
+# Route to handle subscription
+@app.route('/subscribe', methods=['POST'])
+def subscribe():
+    global subscription
+    subscription = request.get_json()
+    # Store the subscription info (e.g., in a database) if needed
+    print("Subscription received:", subscription)
+    return jsonify({'status': 'success'}), 201
+
+# Route to send a test notification
+@app.route('/send_notification', methods=['POST'])
+def send_notification():
+    try:
+        parsed_url = urlparse(subscription["endpoint"])
+        audience = f"{parsed_url.scheme}://{parsed_url.netloc}"
+        
+        webpush(
+            subscription_info=subscription,
+            data='{"title": "Test Notification", "body": "This is a test push notification!"}',
+            vapid_private_key=os.getenv('VAPID_PRIVATE_KEY'),
+            vapid_claims={
+                "sub": "mailto:your-email@example.com",  # Use a valid email
+                "aud": audience,  # Correct audience for the endpoint
+                "vapid_pub": os.getenv('VAPID_PUBLIC_KEY')  # Include the VAPID public key
+            }
+        )
+        return jsonify({'status': 'success'}), 200
+    except WebPushException as e:
+        print(f"Error sending notification: {e}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route("/test")
+def test():
+    return render_template("test.html")
+if __name__ == '__main__':
+    app.run(debug=True)
