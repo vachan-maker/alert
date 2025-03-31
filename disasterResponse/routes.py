@@ -172,12 +172,13 @@ def phone():
 def admin():
     return render_template("admin.html")
 
-@app.route("/webhook",methods=["POST", "GET"])
-def webhook():
-    if request.method == "GET":
-        data = request.json
-        # print(data)
-        return jsonify(data)
+@app.route('/webhook', methods=['POST','GET'])
+def handle_webhook():
+    data = request.json  # Get JSON data from Supabase
+    print("Received webhook:", data)
+
+    # Process the incoming data (e.g., send push notification)
+    return jsonify({"status": "success"}), 200
     
 @app.route("/get_sos_locations", methods=["GET"])
 def get_sos_locations():
@@ -219,6 +220,7 @@ def subscribe():
     global subscription
     subscription = request.get_json()
     response = supabase.table("profiles").update({"sub":subscription}).eq("id", session["user_id"]).execute()
+    responseb = supabase.table("user_device_tokens").insert({"user_id": session["user_id"], "device_token": subscription}).execute()
     session["longitude"] = response.data[0]["Longitude"]
     session["latitude"] = response.data[0]["Latitude"]
     # print(session["longitude"],session["latitude"])
