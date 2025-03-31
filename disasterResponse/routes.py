@@ -19,6 +19,26 @@ AUTH_URL = f"{SUPABASE_URL}/auth/v1"
 # WebSocket Listener for Supabase Realtime
 # Function to handle new record insertions
 import realtime
+def send_notification(sub,message):
+    try:
+        parsed_url = urlparse(sub["endpoint"])
+        audience = f"{parsed_url.scheme}://{parsed_url.netloc}"
+        
+        webpush(
+            subscription_info=sub,
+            data=json.dumps({"title": "Test Notification", "body": message}),
+            vapid_private_key=os.getenv('VAPID_PRIVATE_KEY'),
+            vapid_claims={
+                "sub": "mailto:your-email@example.com",  # Use a valid email
+                "aud": audience,  # Correct audience for the endpoint
+                "vapid_pub": os.getenv('VAPID_PUBLIC_KEY')  # Include the VAPID public key
+            })
+        # print("Notification sent successfully")
+        
+        return ({'status': 'success'}), 200
+    except WebPushException as e:
+        print(f"Error sending notification: {e}")
+        return ({'status': 'error', 'message': str(e)}), 500
 
 async def watch_table_changes():
     # WebSocket URL for Supabase Realtime
@@ -53,9 +73,14 @@ async def watch_table_changes():
             # Check if it's a postgres_changes event
             if data.get("event") == "postgres_changes":
                 payload = data.get("payload", {})
-                if payload.get("type") == "INSERT":
-                    new_record = payload.get("record")
-                    print(f"New insertion detected: {new_record}")
+                event_data = payload.get("data", {})
+                if event_data.get("type") == "INSERT":
+                    new_record = event_data.get("record")
+                    print(f"Confirmed INSERT event: {new_record}")
+                    send_notification(new_record["sub"],"An ALERT has been reported in your area!. Please stay safe!")
+                    # Trigger notification or other logic here
+                else:
+                    print(f"Event type is {event_data.get('type')}, not an INSERT")
 
 # Run the WebSocket listener in a separate asyncio loop
 def start_realtime_listener():
@@ -151,7 +176,7 @@ def admin():
 def webhook():
     if request.method == "GET":
         data = request.json
-        print(data)
+        # print(data)
         return jsonify(data)
     
 @app.route("/get_sos_locations", methods=["GET"])
@@ -167,7 +192,7 @@ def alert_users():
     response = supabase.table("SOSAlerts").select("*").execute()
     users = supabase.table("profiles").select("id, Latitude, Longitude, sub").execute()
     print("UUUUUUUUUUUUUUUUUSEEEEEEEER")
-    print(users)
+    # print(users)
 
         # Send push notifications to nearby users
     return redirect(url_for("dashboard"))
@@ -187,7 +212,7 @@ def update_location():
         latitude = data.get("latitude")
         print(longitude,latitude)
         response = supabase.table("profiles").update({"Longitude": longitude, "Latitude": latitude}).eq("id", session["user_id"]).execute()
-        print(response)
+        # print(response)
         return jsonify({"message": "Location updated successfully"})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -205,31 +230,11 @@ def subscribe():
     response = supabase.table("profiles").update({"sub":subscription}).eq("id", session["user_id"]).execute()
     session["longitude"] = response.data[0]["Longitude"]
     session["latitude"] = response.data[0]["Latitude"]
-    print(session["longitude"],session["latitude"])
+    # print(session["longitude"],session["latitude"])
     return jsonify({'status': 'success'}), 201
 
 # Route to send a test notification
 @app.route('/send_notification', methods=['POST'])
-def send_notification():
-    try:
-        parsed_url = urlparse(subscription["endpoint"])
-        audience = f"{parsed_url.scheme}://{parsed_url.netloc}"
-        
-        webpush(
-            subscription_info=subscription,
-            data='{"title": "Test Notification", "body": "This is a test push notification!"}',
-            vapid_private_key=os.getenv('VAPID_PRIVATE_KEY'),
-            vapid_claims={
-                "sub": "mailto:your-email@example.com",  # Use a valid email
-                "aud": audience,  # Correct audience for the endpoint
-                "vapid_pub": os.getenv('VAPID_PUBLIC_KEY')  # Include the VAPID public key
-            })
-        print("Notification sent successfully")
-        
-        return jsonify({'status': 'success'}), 200
-    except WebPushException as e:
-        print(f"Error sending notification: {e}")
-        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 @app.route("/test")
 def test():
