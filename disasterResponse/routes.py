@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from flask_cors import CORS
 from pywebpush import webpush, WebPushException
 from functools import wraps
-import os
+import os,math
 
 from urllib.parse import urlparse
 # import openmeteo_requests
@@ -17,6 +17,13 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
 AUTH_URL = f"{SUPABASE_URL}/auth/v1"
+def is_within_radius(lat1, lon1, lat2, lon2, radius_km=10):
+    R = 6371  # Earth radius in km
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = math.sin(dlat / 2) ** 2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2) ** 2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    return R * c <= radius_km
 
 
 @app.route("/login", methods=["POST", "GET"])
@@ -119,6 +126,11 @@ def get_sos_locations():
         return jsonify(data)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+@app.route("/alert_users", methods=["POST"])
+def alert_users():
+    pass
+
+
 
 @app.route("/first-aid")
 def first_aid():
@@ -148,8 +160,9 @@ def subscribe():
     global subscription
     subscription = request.get_json()
     response = supabase.table("profiles").update({"sub":subscription}).eq("id", session["user_id"]).execute()
-    # Store the subscription info (e.g., in a database) if needed
-    print("Subscription received:", subscription)
+    session["longitude"] = response.data[0]["Longitude"]
+    session["latitude"] = response.data[0]["Latitude"]
+    print(session["longitude"],session["latitude"])
     return jsonify({'status': 'success'}), 201
 
 # Route to send a test notification
