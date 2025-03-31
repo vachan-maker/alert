@@ -4,11 +4,10 @@ from dotenv import load_dotenv
 from flask_cors import CORS
 from pywebpush import webpush, WebPushException
 from functools import wraps
-import os,math
+import os,math,asyncio,websockets,json,threading
 
 from urllib.parse import urlparse
 # import openmeteo_requests
-
 import requests
 from disasterResponse import supabase
 from disasterResponse import app
@@ -17,15 +16,51 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
 AUTH_URL = f"{SUPABASE_URL}/auth/v1"
-def is_within_radius(lat1, lon1, lat2, lon2, radius_km=10):
-    R = 6371  # Earth radius in km
-    dlat = math.radians(lat2 - lat1)
-    dlon = math.radians(lon2 - lon1)
-    a = math.sin(dlat / 2) ** 2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2) ** 2
-    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-    return R * c <= radius_km
+# WebSocket Listener for Supabase Realtime
+# Function to handle new record insertions
+import realtime
 
+async def watch_table_changes():
+    # WebSocket URL for Supabase Realtime
+    websocket_url = f"wss://ljncaafiuqjlrnruxirq.supabase.co/realtime/v1/websocket?apikey={SUPABASE_KEY}&vsn=1.0.0"
 
+    async with websockets.connect(websocket_url) as websocket:
+        # Subscribe to INSERT changes on the 'items' table
+        subscription_payload = {
+            "event": "phx_join",
+            "topic": "realtime:public:items",
+            "payload": {
+                "config": {
+                    "postgres_changes": [
+                        {"event": "INSERT", "schema": "public", "table": "sos_logs"}
+                    ]
+                }
+            },
+            "ref": "1"
+        }
+
+        # Send subscription request
+        await websocket.send(json.dumps(subscription_payload))
+
+        print("Subscribed to INSERT changes on 'items' table.")
+
+        # Listen for messages
+        while True:
+            message = await websocket.recv()
+            data = json.loads(message)
+            print("Received message:", data)
+
+            # Check if it's a postgres_changes event
+            if data.get("event") == "postgres_changes":
+                payload = data.get("payload", {})
+                if payload.get("type") == "INSERT":
+                    new_record = payload.get("record")
+                    print(f"New insertion detected: {new_record}")
+
+# Run the WebSocket listener in a separate asyncio loop
+def start_realtime_listener():
+    asyncio.run(watch_table_changes())
+threading.Thread(target=start_realtime_listener, daemon=True).start()
 @app.route("/login", methods=["POST", "GET"])
 def login():
     if request.method == "POST":
@@ -86,13 +121,14 @@ def sos():
         selected_emergency = request.form.get("emergency")
         phone = request.form.get("phone")
         name = request.form.get("name")
-        response = (
+        response= (
         supabase.table("SOSAlerts")
         .insert({"user_identification": 8921385972, "message": phone, "longitude": longitude, "latitude": latitude, "UserName": username,"distress_type": selected_emergency})  
         .execute())
         flash("SOS Alert sent! Help is on the way!", "success")
         return redirect(url_for("dashboard"))
-    except Exception:
+    except Exception as e:
+        print(e)
         flash("Error sending SOS Alert. Have you enabled location?", "danger")
         return (redirect(url_for("dashboard")))
 
@@ -126,9 +162,16 @@ def get_sos_locations():
         return jsonify(data)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-@app.route("/alert_users", methods=["POST"])
+@app.route("/alert_users")
 def alert_users():
-    pass
+    response = supabase.table("SOSAlerts").select("*").execute()
+    users = supabase.table("profiles").select("id, Latitude, Longitude, sub").execute()
+    print("UUUUUUUUUUUUUUUUUSEEEEEEEER")
+    print(users)
+
+        # Send push notifications to nearby users
+    return redirect(url_for("dashboard"))
+
 
 
 
