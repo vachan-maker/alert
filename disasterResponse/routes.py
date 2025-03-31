@@ -147,6 +147,7 @@ def vapid_public_key():
 def subscribe():
     global subscription
     subscription = request.get_json()
+    response = supabase.table("profiles").update({"sub":subscription}).eq("id", session["user_id"]).execute()
     # Store the subscription info (e.g., in a database) if needed
     print("Subscription received:", subscription)
     return jsonify({'status': 'success'}), 201
