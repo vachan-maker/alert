@@ -1,10 +1,11 @@
-from py_vapid import Vapid
+import base64
+import ecdsa
 
-# Create an instance of the Vapid class
-vapid = Vapid()
+private_key = ecdsa.SigningKey.generate(curve=ecdsa.NIST256p)
+public_key = private_key.get_verifying_key()
 
-# Generate a new pair of VAPID keys
-vapid_keys = vapid.generate_keys()
+vapid_private_key = base64.urlsafe_b64encode(private_key.to_string()).decode("utf-8").strip("=")
+vapid_public_key = base64.urlsafe_b64encode(b"\x04" + public_key.to_string()).decode("utf-8").strip("=")
 
-# Print the generated keys
-print("VAPID Keys:", vapid_keys)
+print("Private Key:", vapid_private_key)
+print("Public Key:", vapid_public_key)
