@@ -88,6 +88,95 @@ async function getPlace(latitude, longitude) {
   window.onload = getUserLocation();
 const url = "https://api.open-meteo.com/v1/forecast";
 
+
+let registration; // Declare the registration variable in a higher scope
+
+function SubscribeUser(registration, vapidPublicKey) {
+    registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
+    })
+    .then(subscription => {
+        console.log('User is subscribed:', subscription);
+        // Send subscription to server
+        fetch('/subscribe', {
+            method: 'POST',
+            body: JSON.stringify(subscription),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+    })
+    .catch(err => {
+        console.log('Failed to subscribe the user: ', err);
+    });
+}
+
+// Check if the browser supports notifications and service workers
+if ('serviceWorker' in navigator && 'PushManager' in window) {
+    console.log('Service Worker and Push are supported');
+
+    navigator.serviceWorker.register('/static/sw.js')
+        .then(reg => {
+            registration = reg; // Assign the registration to the higher scoped variable
+            console.log('Service Worker registered with scope:', registration.scope);
+
+            fetch('/vapid_public_key')
+                .then(response => response.json())
+                .then(data => {
+                    const vapidPublicKey = data.public_key;
+                    console.log('VAPID Public Key:', vapidPublicKey);
+
+                    Notification.requestPermission().then(permission => {
+                        if (permission === 'granted') {
+                            console.log('Notification permission granted.');
+                            SubscribeUser(registration, vapidPublicKey);
+                        } else {
+                            console.error('Unable to get permission to notify.');
+                        }
+                    });
+                });
+        })
+        .catch(error => {
+            console.error('Service Worker registration failed:', error);
+        });
+}
+
+// Convert base64 string to Uint8Array (needed for VAPID key)
+function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+}
+
+document.getElementById('test').addEventListener('click', () => {
+    if (!registration) {
+        console.error('Service Worker registration is not available.');
+        return;
+    }
+
+    registration.pushManager.getSubscription().then(subscription => {
+        if (subscription) {
+            console.log('User is already subscribed:', subscription);
+            fetch('/send_notification', {
+                method: 'POST',
+                body: JSON.stringify(subscription),
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => response.json())
+            .then(data => console.log('Notification sent:', data))
+            .catch(error => console.error('Error sending notification:', error));
+        } else {
+            console.warn('User is not subscribed.');
+        }
+    });
+});
+
 </script>
 <div class="px-5 lg:px-30">
   <div class="min-h-96 rounded-xl flex items-center justify-center bg-gradient-to-r from-cyan-500 to-blue-500 animate-gradient">

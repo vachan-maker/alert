@@ -80,23 +80,6 @@
                 console.error('Service Worker registration is not available.');
                 return;
             }
-
-            registration.pushManager.getSubscription().then(subscription => {
-                if (subscription) {
-                    console.log('User is already subscribed:', subscription);
-                    fetch('/send_notification', {
-                        method: 'POST',
-                        body: JSON.stringify(subscription),
-                        headers: { 'Content-Type': 'application/json' }
-                    })
-                    .then(response => response.json())
-                    .then(data => console.log('Notification sent:', data))
-                    .catch(error => console.error('Error sending notification:', error));
-                } else {
-                    console.warn('User is not subscribed.');
-                }
-            });
-        });
     </script>
 </body>
 </html>
