@@ -166,8 +166,9 @@ def send_notification():
                 "sub": "mailto:your-email@example.com",  # Use a valid email
                 "aud": audience,  # Correct audience for the endpoint
                 "vapid_pub": os.getenv('VAPID_PUBLIC_KEY')  # Include the VAPID public key
-            }
-        )
+            })
+        print("Notification sent successfully")
+        
         return jsonify({'status': 'success'}), 200
     except WebPushException as e:
         print(f"Error sending notification: {e}")
