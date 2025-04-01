@@ -44,16 +44,17 @@ def login():
     if request.method == "POST":
         email = request.form.get("email")
         password = request.form.get("password")
-        if email and password:
-            response = supabase.auth.sign_in_with_password({"email": email, "password": password})
-            # print(response)
-            if response and response.session.access_token:
-                session["user"] = response.session.access_token
-                session["user_id"] = response.user.id
-                print(session["user_id"])
-                return redirect(url_for("dashboard"))
-            else:
-                return jsonify({"error": "Invalid credentials"}), 401
+        try:
+            if email and password:
+                response = supabase.auth.sign_in_with_password({"email": email, "password": password})
+                # print(response)
+                if response and response.session.access_token:
+                    session["user"] = response.session.access_token
+                    session["user_id"] = response.user.id
+                    print(session["user_id"])
+                    return redirect(url_for("dashboard"))
+        except Exception as e:
+            flash("Invalid email or password", "error") 
     return render_template("sign-in.html")
 
 @app.route("/register", methods=["POST", "GET"])

@@ -78,7 +78,7 @@ const url = "https://api.open-meteo.com/v1/forecast";
             </div>
 
             <p class="text-gray-700"><strong>User:</strong> {{ alert['UserName'] }} ({{ alert['phone-number'] }})</p>
-            <p class="text-gray-700"><strong>Location:</strong> {{ alert['latitude'] }}, {{ alert['longitude'] }}</p>
+            <p class="text-gray-700" id="location"><strong>Location:</strong> {{ alert['latitude'] }}, {{ alert['longitude'] }}</p>
             <p class="text-gray-700"><strong>Distress Type:</strong> {{ alert['distress_type'] }}</p>
             <p class="text-gray-700"><strong>Message:</strong> {{ alert['message'] }}</p>
 
