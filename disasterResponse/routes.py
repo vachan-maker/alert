@@ -38,6 +38,26 @@ def send_notification(sub,message,notification_url):
     except WebPushException as e:
         print(f"Error sending notification: {e}")
         return ({'status': 'error', 'message': str(e)}), 500
+@app.before_request
+def check_session():
+    """Refresh session if the token has expired."""
+    if request.endpoint in ["login", "logout"]:  # Skip check for login/logout
+        return  
+
+    if "user" in session:
+        try:
+            # Check if the token is still valid
+            supabase.auth.get_user(session["user"])
+        except:
+            # Token expired, try refreshing
+            try:
+                response = supabase.auth.refresh_session(session["refresh_token"])
+                session["user"] = response.session.access_token
+                session["refresh_token"] = response.session.refresh_token  # Update refresh token
+            except:
+                session.clear()  # Clear session if refresh fails
+                flash("Session expired, please log in again.", "warning")
+                return redirect(url_for("login"))
 
 @app.route("/login", methods=["POST", "GET"])
 def login():
@@ -51,12 +71,23 @@ def login():
                 if response and response.session.access_token:
                     session["user"] = response.session.access_token
                     session["user_id"] = response.user.id
+                    
                     print(session["user_id"])
                     return redirect(url_for("dashboard"))
         except Exception as e:
             flash("Invalid email or password", "error") 
     return render_template("sign-in.html")
+@app.route("/logout")
+def logout():
+    if "user" in session:
+        try:
+            supabase.auth.sign_out()  # Logs out from Supabase
+        except Exception as e:
+            print("Logout error:", e)  # Log any errors
 
+    session.clear()  # Clears the Flask session
+    flash("You have been logged out.", "info")
+    return redirect(url_for("login"))
 @app.route("/register", methods=["POST", "GET"])
 def register():
     if request.method == "POST":
