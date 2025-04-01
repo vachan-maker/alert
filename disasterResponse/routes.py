@@ -64,19 +64,30 @@ def login():
     if request.method == "POST":
         email = request.form.get("email")
         password = request.form.get("password")
+        
         try:
             if email and password:
                 response = supabase.auth.sign_in_with_password({"email": email, "password": password})
-                # print(response)
-                if response and response.session.access_token:
-                    session["user"] = response.session.access_token
-                    session["user_id"] = response.user.id
-                    
-                    print(session["user_id"])
-                    return redirect(url_for("dashboard"))
+                print("Supabase Response:", response)
+                
+                if "error" in response:
+                    print("Supabase Error:", response["error"])
+                    flash(response["error"]["message"], "error")  
+                    return redirect(url_for("login_page"))
+
+                if response.user and not response.user.email_confirmed_at:
+                    flash("Please confirm your email before logging in.", "warning")
+                    return redirect(url_for("login_page"))
+
+                session["user"] = response.session.access_token
+                session["user_id"] = response.user.id
+
+                return redirect(url_for("dashboard"))
+
         except Exception as e:
-            flash("Invalid email or password", "error") 
-    return render_template("sign-in.html")
+            print(f"Login Error: {e}")  # Debugging output
+            flash(f"Login failed: {str(e)}", "error")
+            return render_template("sign-in.html")
 @app.route("/logout")
 def logout():
     if "user" in session:
@@ -96,9 +107,9 @@ def register():
         response = supabase.auth.sign_up(
     {"email": email, "password": password})
         print(response)
-        if response:
-            session["user"] = response.session.access_token
-            return redirect(url_for("dashboard"))
+        if response.user.email_confirmed_at == None:
+            flash("Registration successful! Please check your email to confirm your account.", "success")
+            return redirect(url_for("login"))
         else:
             return jsonify({"error": "Invalid credentials"}), 401
     return render_template("register.html")
