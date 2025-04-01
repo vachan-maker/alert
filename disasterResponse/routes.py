@@ -148,7 +148,7 @@ def sos():
         name = request.form.get("name")
         response= (
         supabase.table("SOSAlerts")
-        .insert({"user_identification": 8921385972, "message": phone, "longitude": longitude, "latitude": latitude, "UserName": username,"distress_type": selected_emergency})  
+        .insert({"user_identification": 8921385972, "message": phone, "longitude": longitude, "latitude": latitude, "UserName": username,"distress_type": selected_emergency,"location": "POINT(longitude latitude)"})  
         .execute())
         flash("SOS Alert sent! Help is on the way!", "success")
         return redirect(url_for("dashboard"))
@@ -176,7 +176,6 @@ def admin():
 def handle_webhook():
     data = request.json  # Get JSON data from Supabase
     print("Received webhook:", data)
-
     # Process the incoming data (e.g., send push notification)
     return jsonify({"status": "success"}), 200
     
