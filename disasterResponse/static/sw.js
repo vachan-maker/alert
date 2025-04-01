@@ -9,20 +9,3 @@ self.addEventListener('push', event => {
         self.registration.showNotification(data.title, options)
     );
 });
-
-self.addEventListener('notificationclick', event => {
-    event.notification.close();  // Close notification
-
-    const url = event.notification.data?.url || '/';
-
-    event.waitUntil(
-        clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windowClients => {
-            for (let client of windowClients) {
-                if (client.url === url && 'focus' in client) {
-                    return client.focus();
-                }
-            }
-            return clients.openWindow(url);  // Open the SOS alert URL
-        })
-    );
-});
