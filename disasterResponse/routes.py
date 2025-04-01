@@ -131,9 +131,9 @@ def admin():
 def handle_webhook():
     data = request.json  # Get JSON data from Supabase
     user_id = data.get("user_id")
-    response = supabase.table("device_tokens").select("device_token").eq("user_id", user_id).execute()
+    response = supabase.table("user_device_tokens").select("device_token").eq("user_id", user_id).execute()
     tokens = [row["device_token"] for row in response.data]
-    for token in token:
+    for token in tokens:
         send_notification(token, "SOS Alert! Help is on the way!")
     # Process the incoming data (e.g., send push notification)
     return jsonify({"status": "success"}), 200
