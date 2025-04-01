@@ -26,9 +26,8 @@ def send_notification(sub,message,notification_url):
         
         webpush(
             subscription_info=sub,
-            data=json.dumps({"title": "Test Notification", "body": message}),
+            data=json.dumps({"title": "Test Notification", "body": message, "url": notification_url}),
             vapid_private_key=os.getenv('VAPID_PRIVATE_KEY'),
-            url = notification_url,
             vapid_claims={
                 "sub": "mailto:your-email@example.com",  # Use a valid email
                 "aud": audience,  # Correct audience for the endpoint
