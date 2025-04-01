@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from flask_cors import CORS
 from pywebpush import webpush, WebPushException
 from functools import wraps
-import os,math,asyncio,websockets,json,threading
+import os, json
 
 from urllib.parse import urlparse
 # import openmeteo_requests
@@ -18,7 +18,6 @@ SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 AUTH_URL = f"{SUPABASE_URL}/auth/v1"
 # WebSocket Listener for Supabase Realtime
 # Function to handle new record insertions
-import realtime
 def send_notification(sub,message,notification_url):
     try:
         parsed_url = urlparse(sub["endpoint"])
@@ -132,7 +131,7 @@ def handle_webhook():
     data = request.json  # Get JSON data from Supabase
     print("Data",data)
     user_id = data['record']['user_id']
-    sos_id = data['record']['id']
+    sos_id = data['record']['sos_id']
     sos_alert_url = f"https://alert-zbsh.onrender.com/alert/{sos_id}"
     print("User ID from webhook:", user_id)
     print(user_id)
