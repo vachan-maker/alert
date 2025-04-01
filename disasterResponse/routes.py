@@ -148,8 +148,9 @@ def sos():
         name = request.form.get("name")
         response= (
         supabase.table("SOSAlerts")
-        .insert({"user_identification": 8921385972, "message": phone, "longitude": longitude, "latitude": latitude, "UserName": username,"distress_type": selected_emergency,"user_id": session["user_id"]})  
+        .insert({"user_identification": 8921385972, "message": phone, "longitude": longitude, "latitude": latitude, "UserName": name,"distress_type": selected_emergency,"user_id": session["user_id"]})  
         .execute())
+        print(response)
         flash("SOS Alert sent! Help is on the way!", "success")
         return redirect(url_for("dashboard"))
     except Exception as e:
@@ -202,7 +203,7 @@ def update_location():
         longitude = data.get("longitude")
         latitude = data.get("latitude")
         print(longitude,latitude)
-        response = supabase.table("profiles").update({"Longitude": longitude, "Latitude": latitude}).eq("id", session["user_id"]).execute()
+        response = supabase.table("profiles").update({"longitude": longitude, "latitude": latitude}).eq("id", session["user_id"]).execute()
         # print(response)
         return jsonify({"message": "Location updated successfully"})
     except Exception as e:
@@ -218,10 +219,13 @@ def vapid_public_key():
 def subscribe():
     global subscription
     subscription = request.get_json()
-    response = supabase.table("profiles").update({"sub":subscription}).eq("id", session["user_id"]).execute()
-    responseb = supabase.table("user_device_tokens").insert({"user_id": session["user_id"], "device_token": subscription}).execute()
-    session["longitude"] = response.data[0]["Longitude"]
-    session["latitude"] = response.data[0]["Latitude"]
+    response = supabase.table("user_device_tokens") \
+    .upsert({"user_id": session["user_id"], "device_token": subscription}, on_conflict=["device_token"]) \
+    .execute()
+    print("SUBSCRIIIBE")
+    print(response)
+    # response = supabase.table("profiles").update({"sub":subscription}).eq("id", session["user_id"]).execute()
+    # responseb = supabase.table("user_device_tokens").insert({"user_id": session["user_id"], "device_token": subscription}).execute()
     # print(session["longitude"],session["latitude"])
     return jsonify({'status': 'success'}), 201
 
