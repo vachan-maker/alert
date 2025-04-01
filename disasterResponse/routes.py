@@ -19,7 +19,7 @@ AUTH_URL = f"{SUPABASE_URL}/auth/v1"
 # WebSocket Listener for Supabase Realtime
 # Function to handle new record insertions
 import realtime
-def send_notification(sub,message):
+def send_notification(sub,message,notification_url):
     try:
         parsed_url = urlparse(sub["endpoint"])
         audience = f"{parsed_url.scheme}://{parsed_url.netloc}"
@@ -28,6 +28,7 @@ def send_notification(sub,message):
             subscription_info=sub,
             data=json.dumps({"title": "Test Notification", "body": message}),
             vapid_private_key=os.getenv('VAPID_PRIVATE_KEY'),
+            url = notification_url,
             vapid_claims={
                 "sub": "mailto:your-email@example.com",  # Use a valid email
                 "aud": audience,  # Correct audience for the endpoint
@@ -132,15 +133,27 @@ def handle_webhook():
     data = request.json  # Get JSON data from Supabase
     print("Data",data)
     user_id = data['record']['user_id']
+    sos_id = data['record']['sos_id']
+    sos_alert_url = f"https://yourwebsite.com/sos/{sos_id}"
     print("User ID from webhook:", user_id)
     print(user_id)
     response = supabase.table("user_device_tokens").select("device_token").eq("user_id", user_id).execute()
     tokens = [row["device_token"] for row in response.data]
     for token in tokens:
-        send_notification(token, "SOS Alert! Help is on the way!")
+        send_notification(token, "An SOS Alert detected near you.Tap for more info!",sos_alert_url)
     # Process the incoming data (e.g., send push notification)
     return jsonify({"status": "success"}), 200
-    
+@app.route("/alert/<alert_id>")
+def alert(alert_id):
+    try:
+        response = supabase.table("SOSAlerts").select("*").eq("sos_id", alert_id).execute()
+        data = response.data
+        if data:
+            return render_template("alert.html", alert=data[0])
+        else:
+            return jsonify({"error": "Alert not found"}), 404
+    except Exception as e:  
+        return jsonify({"error": str(e)}), 500  
 @app.route("/get_sos_locations", methods=["GET"])
 def get_sos_locations():
     try:
