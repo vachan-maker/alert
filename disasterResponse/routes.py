@@ -133,7 +133,7 @@ def handle_webhook():
     print("Data",data)
     user_id = data['record']['user_id']
     sos_id = data['record']['id']
-    sos_alert_url = f"https://yourwebsite.com/sos/{sos_id}"
+    sos_alert_url = f"https://alert-zbsh.onrender.com/{sos_id}"
     print("User ID from webhook:", user_id)
     print(user_id)
     response = supabase.table("user_device_tokens").select("device_token").eq("user_id", user_id).execute()
