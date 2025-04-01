@@ -131,6 +131,8 @@ def admin():
 def handle_webhook():
     data = request.json  # Get JSON data from Supabase
     user_id = data.get("user_id")
+    print("User ID from webhook:", user_id)
+    print(user_id)
     response = supabase.table("user_device_tokens").select("device_token").eq("user_id", user_id).execute()
     tokens = [row["device_token"] for row in response.data]
     for token in tokens:
