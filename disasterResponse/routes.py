@@ -130,6 +130,7 @@ def admin():
 @app.route('/webhook', methods=['POST','GET'])
 def handle_webhook():
     data = request.json  # Get JSON data from Supabase
+    print("Data",data)
     user_id = data.get("user_id")
     print("User ID from webhook:", user_id)
     print(user_id)
