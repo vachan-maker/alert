@@ -133,7 +133,7 @@ def handle_webhook():
     data = request.json  # Get JSON data from Supabase
     print("Data",data)
     user_id = data['record']['user_id']
-    sos_id = data['record']['sos_id']
+    sos_id = data['record']['id']
     sos_alert_url = f"https://yourwebsite.com/sos/{sos_id}"
     print("User ID from webhook:", user_id)
     print(user_id)
