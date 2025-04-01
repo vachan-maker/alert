@@ -40,52 +40,6 @@ def send_notification(sub,message):
         print(f"Error sending notification: {e}")
         return ({'status': 'error', 'message': str(e)}), 500
 
-async def watch_table_changes():
-    # WebSocket URL for Supabase Realtime
-    websocket_url = f"wss://ljncaafiuqjlrnruxirq.supabase.co/realtime/v1/websocket?apikey={SUPABASE_KEY}&vsn=1.0.0"
-
-    async with websockets.connect(websocket_url) as websocket:
-        # Subscribe to INSERT changes on the 'items' table
-        subscription_payload = {
-            "event": "phx_join",
-            "topic": "realtime:public:items",
-            "payload": {
-                "config": {
-                    "postgres_changes": [
-                        {"event": "INSERT", "schema": "public", "table": "sos_logs"}
-                    ]
-                }
-            },
-            "ref": "1"
-        }
-
-        # Send subscription request
-        await websocket.send(json.dumps(subscription_payload))
-
-        print("Subscribed to INSERT changes on 'items' table.")
-
-        # Listen for messages
-        while True:
-            message = await websocket.recv()
-            data = json.loads(message)
-            print("Received message:", data)
-
-            # Check if it's a postgres_changes event
-            if data.get("event") == "postgres_changes":
-                payload = data.get("payload", {})
-                event_data = payload.get("data", {})
-                if event_data.get("type") == "INSERT":
-                    new_record = event_data.get("record")
-                    print(f"Confirmed INSERT event: {new_record}")
-                    send_notification(new_record["sub"],"An ALERT has been reported in your area!. Please stay safe!")
-                    # Trigger notification or other logic here
-                else:
-                    print(f"Event type is {event_data.get('type')}, not an INSERT")
-
-# Run the WebSocket listener in a separate asyncio loop
-def start_realtime_listener():
-    asyncio.run(watch_table_changes())
-threading.Thread(target=start_realtime_listener, daemon=True).start()
 @app.route("/login", methods=["POST", "GET"])
 def login():
     if request.method == "POST":
