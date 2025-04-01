@@ -145,7 +145,7 @@ def handle_webhook():
 @app.route("/alert/<alert_id>")
 def alert(alert_id):
     try:
-        response = supabase.table("SOSAlerts").select("*").eq("sos_id", alert_id).execute()
+        response = supabase.table("SOSAlerts").select("*").eq("id", alert_id).execute()
         data = response.data
         if data:
             return render_template("alert.html", alert=data[0])
