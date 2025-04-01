@@ -1,11 +1,40 @@
 self.addEventListener('push', event => {
-    const data = event.data.json();
-    const options = {
-        body: data.body,
-        icon: '/static/icon.png', // Optional: add an icon in your static folder
-        data: { url: notificationData.url }, // URL to open when the notification is clicked
-    };
-    event.waitUntil(
-        self.registration.showNotification(data.title, options)
-    );
+    console.log('Push event received:', event);
+
+    if (event.data) {
+        const notificationData = event.data.json();
+        console.log('Notification Data:', notificationData);
+
+        self.registration.showNotification(notificationData.title, {
+            body: notificationData.body,
+            icon: '/icons/icon.png',
+            data: { url: notificationData.url },
+            actions: [
+                { action: 'open_url', title: 'View Alert' }
+            ]
+        });
+    }
+});
+
+self.addEventListener('notificationclick', event => {
+    console.log('Notification clicked:', event);
+
+    event.notification.close();  // Close the notification
+
+    if (event.action === 'open_url') {  // Button click action
+        const url = event.notification.data?.url || '/';
+        event.waitUntil(clients.openWindow(url));
+    } else {  // Default click (outside button)
+        const url = event.notification.data?.url || '/';
+        event.waitUntil(
+            clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windowClients => {
+                for (let client of windowClients) {
+                    if (client.url === url && 'focus' in client) {
+                        return client.focus();
+                    }
+                }
+                return clients.openWindow(url);
+            })
+        );
+    }
 });
