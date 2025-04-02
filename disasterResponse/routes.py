@@ -88,6 +88,7 @@ def login():
             print(f"Login Error: {e}")  # Debugging output
             flash(f"Login failed: {str(e)}", "error")
             return render_template("sign-in.html")
+    return render_template("sign-in.html")
 @app.route("/logout")
 def logout():
     if "user" in session:
