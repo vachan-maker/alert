@@ -25,7 +25,7 @@ def send_notification(sub,message,notification_url):
         
         webpush(
             subscription_info=sub,
-            data=json.dumps({"title": "Test Notification", "body": message, "url": notification_url}),
+            data=json.dumps({"title": "SOS Alert Report!", "body": message, "url": notification_url}),
             vapid_private_key=os.getenv('VAPID_PRIVATE_KEY'),
             vapid_claims={
                 "sub": "mailto:your-email@example.com",  # Use a valid email
@@ -103,11 +103,14 @@ def logout():
 @app.route("/register", methods=["POST", "GET"])
 def register():
     if request.method == "POST":
+        name = request.form.get("name")
         email = request.form.get("email")
         password = request.form.get("password")
         response = supabase.auth.sign_up(
     {"email": email, "password": password})
         print(response)
+        user_id = response.user.id
+        supabase.from_('profiles').insert([{"id": user_id, "name": name}]).execute()
         if response.user.email_confirmed_at == None:
             flash("Registration successful! Please check your email to confirm your account.", "success")
             return redirect(url_for("login"))
@@ -133,7 +136,7 @@ def dashboard():
         print(response)
     except Exception as e:
         print(e)
-    return render_template("index.html",name=username)
+    return render_template("index.html")
 
 @app.route("/sos",methods=["POST"]) 
 def sos():
@@ -191,7 +194,11 @@ def alert(alert_id):
         response = supabase.table("SOSAlerts").select("*").eq("id", alert_id).execute()
         data = response.data
         if data:
-            return render_template("alert.html", alert=data[0])
+            user_id = data[0]["user_id"]
+            name_response = supabase.table("profiles").select("name").eq("id",user_id).execute()
+            print(name_response)     
+            return render_template("alert.html", alert=data[0],name=name_response.data[0]["name"])
+    
         else:
             return jsonify({"error": "Alert not found"}), 404
     except Exception as e:  

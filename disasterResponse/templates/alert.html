@@ -26,7 +26,7 @@
                 <h2 class="text-lg font-semibold text-black">Alert ID: {{ alert['id'] }}</h2>
             </div>
 
-            <p class="text-gray-700"><strong>Reported By:</strong> {{ alert['UserName'] }} ({{ alert['phone-number'] }})</p>
+            <p class="text-gray-700"><strong>Reported By:</strong> {{name}} ({{ alert['phone-number'] }})</p>
             <p class="text-gray-700" id="location"><strong>Location:</strong> {{ alert['latitude'] }}, {{ alert['longitude'] }}</p>
             <p class="text-gray-700"><strong>Distress Type:</strong> {{ alert['distress_type'] }}</p>
             <p class="text-gray-700"><strong>Message:</strong> {{ alert['message'] }}</p>
