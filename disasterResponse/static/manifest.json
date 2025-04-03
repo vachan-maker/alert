@@ -2,9 +2,16 @@
     "name": "ALERT - Disaster Response",
     "short_name": "ALERT",
     "start_url": "/",
+    "description": "ALERT is a web application designed to provide real-time information and resources during disasters. It offers a platform for users to report incidents, access emergency services, and stay informed about ongoing situations.",
     "display": "standalone",
-    "background_color": "#ffffff",
+    "background_color": "#1c232b",
     "theme_color": "#007bff",
+    "orientations": [
+      "portrait-primary",
+      "landscape-primary",
+      "portrait-secondary",
+      "landscape-secondary"
+    ],
     "icons": [
       {
         "src": "/static/image/192.png",
@@ -14,7 +21,40 @@
       {
         "src": "/static/image/512.png",
         "sizes": "512x512",
-        "type": "image/png"
+        "type": "image/png",
+        "form_factor": "wide"
+      }
+    ],
+    "screenshots": [
+      {
+        "src": "/static/image/1.png",
+        "sizes": "3072x1688",
+        "type": "image/png",
+        "form_factor": "wide"
+      },
+      {
+        "src": "/static/image/2.png",
+        "sizes": "3072x1688",
+        "type": "image/png",
+        "form_factor": "wide"
+      },
+      {
+        "src": "/static/image/3.png",
+        "sizes": "3072x1688",
+        "type": "image/png",
+        "form_factor": "wide"
+      },
+      {
+        "src":"/static/image/mobile1.jpeg",
+        "sizes":"1080x2303",
+        "type":"image/jpeg",
+        "form_factor":"narrow"
+      },
+      {
+        "src":"/static/image/mobile2.jpeg",
+        "sizes":"1080x2303",
+        "type":"image/jpeg",
+        "form_factor":"narrow"
       }
     ]
   }

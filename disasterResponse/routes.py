@@ -145,10 +145,10 @@ def sos():
         latitude = request.form.get("latitude")
         selected_emergency = request.form.get("emergency")
         phone = request.form.get("phone")
-        name = request.form.get("name")
+        name = username
         response= (
         supabase.table("SOSAlerts")
-        .insert({"user_identification": 8921385972, "message": phone, "longitude": longitude, "latitude": latitude, "UserName": name,"distress_type": selected_emergency,"user_id": session["user_id"]})  
+        .insert({"user_identification": 8921385972, "message": phone, "longitude": longitude, "latitude": latitude, "UserName": username,"distress_type": selected_emergency,"user_id": session["user_id"]})  
         .execute())
         print(response)
         flash("SOS Alert sent! Help is on the way!", "success")
