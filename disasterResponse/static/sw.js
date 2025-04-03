@@ -7,7 +7,7 @@ self.addEventListener('push', event => {
 
         self.registration.showNotification(notificationData.title, {
             body: notificationData.body,
-            icon: '/image/192.png',
+            icon: '/static/image/192.png',
             data: { url: notificationData.url },
             actions: [
                 { action: 'open_url', title: 'View Alert' }
